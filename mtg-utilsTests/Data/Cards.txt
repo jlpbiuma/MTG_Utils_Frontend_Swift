@@ -1,0 +1,88 @@
+// COMMANDER
+1 Aragorn, the Uniter (LTR) 192
+
+1 Annie Joins Up (POTJ) 191p
+1 Aragorn, Hornburg Hero (LTC) 492
+1 Aragorn, King of Gondor (LTC) 5
+1 Arcane Signet (PIP) 224
+1 Armadillo Cloak (EMA) 195
+1 Arwen, Mortal Queen (LTR) 778 *F*
+1 Atarka's Command (DTK) 213
+1 Bloom Tender (2X2) 138
+1 Boromir, Gondor's Hope (LTC) 49
+1 Boromir, Warden of the Tower (LTR) 302
+1 Boros Charm (GTC) 148
+1 Bountiful Promenade (CLB) 601
+1 Brokers Charm (SNC) 171
+1 Cabaretti Charm (SNC) 173
+1 Champion of Lambholt (C16) 144
+1 Chromatic Lantern (RVR) 390
+1 Chulane, Teller of Tales (MKC) 202
+1 Command Tower (CMR) 350
+1 Cryptolith Rite (SOI) 200
+1 Cultivate (PW23) 6 *F*
+1 Decisive Denial (OTP) 42
+1 Dovin's Veto (WAR) 193
+1 Elven Chorus (LTR) 364
+1 Eureka Moment (M3C) 260
+1 Exotic Orchard (NEC) 168
+1 Fallaji Wayfarer (DMC) 11
+1 Faramir, Prince of Ithilien (LTR) 319
+1 Farseek (M13) 170
+5 Forest (MH3) 319
+1 Galadriel, Light of Valinor (LTC) 498
+1 General Ferrous Rokiric (MH2) 366
+1 Growth Spiral (DMC) 153
+1 Hajar, Loyal Bodyguard (BRO) 211
+1 Hero of Precinct One (DMC) 101
+1 Heroic Intervention (WHO) 476
+1 Inga and Esika (MOM) 310
+4 Island (MH3) 312
+1 Izzet Charm (RTR) 172
+1 Jetmir's Garden (SNC) 351
+1 Jetmir, Nexus of Revels (SLD) 1555
+1 Katilda, Dawnhart Prime (MID) 309
+1 Ketria Triome (IKO) 310
+1 Knight of New Alara (DMC) 156
+1 Kyler, Sigardian Emissary (MIC) 4
+1 Kynaios and Tiro of Meletis (C16) 36 *F*
+1 Lara Croft, Tomb Raider (SLD) 1501
+1 Lavinia, Azorius Renegade (RVR) 370
+1 Manamorphose (MMA) 191
+1 Mass Appeal (AVR) 66
+1 Minas Tirith (LTR) 420
+1 Mirari's Wake (CMM) 928
+4 Mountain (MKM) 283
+1 Nature's Lore (DMR) 170
+1 Naya Charm (DMC) 162
+1 Noble Hierarch (MM2) 151
+1 Path of Ancestry (MKC) 279
+1 Path to Exile (PLST) E02-3
+1 Pillar of the Paruns (2X2) 328
+1 Pippin, Guard of the Citadel (LTR) 218
+5 Plains (OTJ) 278
+1 Raise the Palisade (LTC) 425
+1 Raugrin Triome (IKO) 311
+1 Rejuvenating Springs (CMR) 354
+1 Rivendell (LTR) 344
+1 Roaming Throne (LCI) 344
+1 Sea of Clouds (PCLB) 360s *F*
+1 Sigarda, Font of Blessings (MAT) 47
+1 Simic Charm (GTC) 195
+1 Skullclamp (BLC) 283
+1 Spara's Headquarters (SNC) 257
+1 Spectator Seating (CMM) 664
+1 Spire Garden (BBD) 85
+1 Supreme Verdict (CLU) 211
+1 Surrak Dragonclaw (DMC) 169
+1 Swords to Plowshares (C16) 78
+1 Temur Charm (C20) 230
+1 Théoden, King of Rohan (LTR) 233
+1 Time Wipe (MOC) 340
+1 Titanic Ultimatum (DDH) 31
+1 Training Center (CMM) 665
+1 Whirlwind of Thought (MOC) 344
+1 Yavimaya, Cradle of Growth (MH2) 261
+1 Éomer, King of Rohan (LTC) 52
+1 Éowyn, Fearless Knight (LTR) 201
+1 Éowyn, Shieldmaiden (LTC) 81 *E*

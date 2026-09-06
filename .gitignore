@@ -1,0 +1,17 @@
+# Xcode
+## User settings
+xcuserdata/
+*.xcuserstate
+project.xcworkspace/xcuserdata/
+
+## Build generated
+build/
+DerivedData/
+*.moved-aside
+*.xccheckout
+*.xcscmblueprint
+
+## Others
+.DS_Store
+*.swp
+*~

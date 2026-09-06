@@ -8,17 +8,40 @@
 import SwiftUI
 
 struct ContentView: View {
+    @Environment(AppStore.self) private var appStore
+    @State private var selectedTab: AppTab = .decks
+
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        TabView(selection: $selectedTab) {
+            NavigationStack {
+                DecksListView()
+            }
+            .tabItem {
+                Label("Mazos", systemImage: "rectangle.stack.fill")
+            }
+            .tag(AppTab.decks)
+
+            NavigationStack {
+                CollectionView()
+            }
+            .tabItem {
+                Label("Colección", systemImage: "square.grid.2x2")
+            }
+            .tag(AppTab.collection)
+
+            NavigationStack {
+                AccountView()
+            }
+            .tabItem {
+                Label("Cuenta", systemImage: "person.crop.circle")
+            }
+            .tag(AppTab.account)
         }
-        .padding()
     }
 }
 
 #Preview {
     ContentView()
+        .environment(AppStore.demo)
+        .preferredColorScheme(.dark)
 }

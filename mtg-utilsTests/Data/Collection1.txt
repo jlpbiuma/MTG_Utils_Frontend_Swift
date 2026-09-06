@@ -1,0 +1,1426 @@
+1 Tithing Blade // Consuming Sepulcher (LCI) 128
+1 Persistent Petitioners (RVR) 53
+1 Mutant Town Musicians (TMT) 97
+1 Kulrath Mystic (ECL) 56
+1 Tweeze (ECL) 162
+1 Chaos Spewer (ECL) 210
+1 Many Partings (LTR) 445
+1 Crossroads Watcher (ECL) 173
+1 Firdoch Core (ECL) 255
+1 Foraging Wickermaw (ECL) 256
+1 Fire Urchin (CLU) 133
+1 Maximize Altitude (GRN) 43
+1 Piston-Fist Cyclops (GRN) 217
+1 Luminous Bonds (GRN) 21
+1 Centaur Peacemaker (GRN) 158
+1 Deepwood Drummer (MMQ) 239
+1 Tenderize (TMT) 133
+1 Zoo Escapees (TMT) 138
+1 Mutant Chain Reaction (TMT) 125
+1 Shattered Acolyte (SOS) 31
+1 Swarm, Being of Bees (SPM) 69
+1 Spectacular Tactics (SPM) 15
+1 Coeurl (FIN) 12
+1 White Mage's Staff (FIN) 42
+1 Scorpion's Sting (SPM) 65
+1 Summon: G.F. Ifrit (FIN) 163
+1 Rosecot Knight (MH3) 42
+1 Utter Insignificance (MH3) 78
+1 Kami of Jealous Thirst (MH3) 98
+1 Scurrilous Sentry (MH3) 108
+1 Viashino Pyromancer (FDN) 634
+1 Cornered by Black Mages (FIN) 93
+1 Brighthearth Banneret (MOR) 88
+1 Wander Off (SOS) 104
+1 Zealous Lorecaster (SOS) 137
+1 Offer Immortality (FDN) 525
+1 Foggy Swamp Hunters (TLA) 101
+1 Pirate Peddlers (TLA) 115
+1 Swampsnare Trap (TLA) 120
+1 Canyon Crawler (TLA) 90
+1 Ajani's Response (SOS) 6
+1 Gluetius Maximus (UNH) 98
+1 Dig Site Inventory (SOS) 10
+1 Textbook Tabulator (SOS) 70
+1 Heated Argument (SOS) 118
+1 Inkling Mascot (SOS) 196
+1 Chase Inspiration (SOS) 41
+1 Cost of Brilliance (SOS) 77
+1 Tackle Artist (SOS) 133
+1 Deluge Virtuoso (SOS) 42
+1 Fear of the Dark (DSK) 98
+1 Slavering Branchsnapper (DSK) 198
+1 Hecteyes (FIN) 103
+1 Leonardo, Big Brother (TMT) 14
+1 Stomped by the Foot (TMT) 82
+1 Omni-Cheese Pizza (TMT) 176
+1 Eager Glyphmage (SOS) 11
+1 Goblin Glasswright // Craft with Pride (SOS) 117
+1 Starling, Aerial Ally (SPM) 18
+1 Electro's Bolt (SPM) 77
+1 Elder Auntie (ECL) 133
+1 Silvergill Peddler (ECL) 70
+1 Tributary Vaulter (ECL) 40
+1 Cryoshatter (EOE) 53
+1 Mental Modulation (EOE) 67
+1 Reluctant Dounguard (ECL) 31
+1 Heirloom Auntie (ECL) 107
+1 Kyoshi Battle Fan (TLA) 257
+1 Barrels of Blasting Jelly (TLA) 254
+1 Merchant of Many Hats (TLA) 110
+1 Razor Rings (TLA) 33
+1 Dwarven Priest (M19) 11
+1 Earth Rumble Wrestlers (TLA) 218
+1 Cat-Owl (TLA) 212
+1 Messenger Hawk (TLA) 234
+1 Earth Village Ruffians (TLA) 219
+1 Vindictive Warden (TLA) 249
+1 Bogslither's Embrace (ECL) 94
+1 Mistmeadow Council (ECL) 183
+1 Wanderwine Distracter (ECL) 82
+1 Sun-Dappled Celebrant (ECL) 37
+1 Flamekin Gildweaver (ECL) 140
+1 Midnight Tilling (ECL) 182
+1 Mischievous Sneakling (ECL) 235
+1 Flaring Cinder (ECL) 225
+1 Burning Curiosity (ECL) 129
+1 Bile-Vial Boggart (ECL) 87
+1 Ice Magic (FIN) 56
+1 Anchovy & Banana Pizza (TMT) 57
+1 Bebop, Warthog Warrior (TMT) 59
+1 Unsubtle Mockery (SOS) 136
+1 Run Behind (SOS) 66
+1 Abrade (INR) 139
+1 Dwynen's Elite (FDN) 218
+1 Wither and Bloom (MH3) 111
+1 Serum Visionary (MH3) 69
+1 Grounded for Life (TMT) 7
+1 Jennika, Bad Apple Big Sister (TMT) 10
+1 Jailbreak Scheme (OTJ) 53
+1 Peerless Ropemaster (OTJ) 60
+1 Spring Splasher (OTJ) 69
+1 Djinn of Fool's Fall (OTJ) 43
+1 Bonepicker Skirge (ONE) 290
+1 Kor Halberd (MOM) 27
+1 Preening Champion (MOM) 73
+1 Deadly Derision (MOM) 99
+1 Kithkin Billyrider (MOM) 24
+1 Etched Host Doombringer (MOM) 102
+1 Thunderhead Squadron (MOM) 81
+1 Elemental Summoning (STX) 183
+1 Pillardrop Warden (STX) 112
+1 Dramatist's Puppet (NEO) 244
+1 You Are Already Dead (NEO) 129
+1 Render Speechless (SOS) 220
+1 Pterafractyl (SOS) 215
+1 Studious First-Year // Rampant Growth (SOS) 162
+1 Noxious Newt (SOS) 155
+1 Mindful Biomancer (SOS) 154
+1 Spider-Gwen, Free Spirit (SPM) 90
+1 Shock Brigade (TDM) 120
+1 Moment of Truth (MOM) 67
+1 Reigning Victor (TDM) 216
+1 Nightblade Brigade (TDM) 85
+1 Endrider Catalyzer (DFT) 124
+1 Battle-Scarred Goblin (LTR) 115
+1 Mayhem Patrol (SNC) 114
+1 Dazzling Angel (FDN) 9
+1 Ephara's Dispersal (MKC) 103
+1 Thriving Skyclaw (MH3) 141
+1 Act of Treason (M20) 124
+1 Longstalk Brawl (BLB) 182
+1 Fanatical Strength (MKM) 159
+1 Armored Kincaller (LCI) 174
+1 Run Over (DFT) 179
+1 Zog, Triceraton Castaway (TMT) 111
+1 Hamato Guardian Stance (TMT) 8
+1 Action News Crew (TMT) 1
+1 Sephiroth's Intervention (FIN) 116
+1 Namazu Trader (FIN) 107
+1 Fate of the Sun-Cryst (FIN) 19
+1 Hot Dog Cart (SPM) 164
+1 Steel Wrecking Ball (SPM) 177
+1 Sleep Paralysis (M20) 75
+1 Fortress Crab (M20) 60
+1 Unsettling Twins (DSK) 38
+1 Alchemist's Greeting (INR) 140
+1 Moldgraf Millipede (INR) 208
+1 Guardian of Pilgrims (INR) 26
+1 Blazing Torch (INR) 254
+1 Captain of Umbar (LTR) 45
+1 Ithilien Kingfisher (LTR) 58
+1 Treason of Isengard (LTR) 74
+1 Knights of Dol Amroth (LTR) 59
+1 Willow-Wind (LTR) 76
+1 Elven Farsight (LTR) 161
+1 Ent's Fury (LTR) 164
+1 Mirkwood Spider (LTR) 178
+1 Galadhrim Bow (LTR) 167
+1 Chance-Met Elves (LTR) 157
+1 Many Partings (LTR) 176
+1 Brandywine Farmer (LTR) 155
+1 Wose Pathfinder (LTR) 190
+1 Pippin's Bravery (LTR) 414
+1 Malevolent Chandelier (DSK) 252
+1 Glimmerlight (DSK) 249
+1 Found Footage (DSK) 246
+1 Friendly Teddy (DSK) 247
+1 Dead Weight (LCI) 99
+1 Desperate Bloodseeker (OTJ) 86
+1 Dragoon's Wyvern (FIN) 49
+1 Snowmelt Stag (TDM) 57
+1 Dirgur Island Dragon // Skimming Strike (TDM) 294
+1 Trade Route Envoy (TDM) 163
+1 Rebellious Strike (TDM) 20
+1 Retrieve the Esper (FIN) 68
+1 Rook Turret (FIN) 69
+1 Narset's Rebuke (TDM) 114
+1 Roamer's Routine (TDM) 154
+1 Sibsig Appraiser (TDM) 56
+1 Gurmag Nightwatch (TDM) 190
+1 Piercing Exhale (TDM) 151
+1 Champion of Dusan (TDM) 137
+1 Lost Days (TLA) 62
+1 Forecasting Fortune Teller (TLA) 51
+1 Feisty Spikeling (ECL) 223
+1 Romantic Rendezvous (SPM) 86
+1 Spider Manifestation (SPM) 148
+1 Devoted Duelist (TDM) 104
+1 Blood Seeker (M12) 81
+1 Thunderscape Apprentice (INV) 174
+1 Kavu Scout (INV) 151
+1 Bewitching Leechcraft (LTR) 41
+1 How to Start a Riot (TLA) 140
+1 Purple Pentapus (TLE) 233
+1 Gran Pulse Ochu (FIN) 189
+1 Shopkeeper's Bane (SOS) 159
+1 Efflorescence (SOS) 144
+1 Hungry Graffalon (SOS) 151
+1 Mage Tower Referee (SOS) 249
+1 Page, Loose Leaf (SOS) 250
+1 Biblioplex Tomekeeper (SOS) 247
+1 Rancorous Archaic (SOS) 2
+1 Mardu Devotee (TDM) 16
+1 Dispelling Exhale (TDM) 41
+1 Krotiq Nestguard (TDM) 148
+1 Fortress Kin-Guard (TDM) 12
+1 Fire-Rim Form (TDM) 107
+1 MJ, Rising Star (SPE) 3
+1 Mysterio's Phantasm (SPM) 38
+1 Angry Rabble (SPM) 75
+1 Invasion of Amonkhet // Lazotep Convert (MOM) 231
+1 Gallant Fowlknight (ECL) 17
+1 Keep Out (ECL) 19
+1 Flame-Chain Mauler (ECL) 138
+1 Fire Nation Cadets (TLA) 134
+1 Ostrich-Horse (TLA) 188
+1 Raucous Audience (TLA) 190
+1 Walltop Sentries (TLA) 202
+1 Saber-Tooth Moose-Lion (TLA) 194
+1 Daggerback Basilisk (M19) 174
+1 Tolarian Scholar (M19) 80
+1 Snapping Drake (M20) 318
+1 Path to Redemption (TLA) 31
+1 Glider Kids (TLA) 21
+1 Illvoi Galeblade (EOE) 58
+1 Chrome Prowler (ONE) 45
+1 Riot Control (BLC) 151
+1 Morgue Burst (DGM) 86
+1 Punish the Enemy (DGM) 35
+1 Runner's Bane (DGM) 17
+1 Beetleform Mage (DGM) 54
+1 Sagu Pummeler (TDM) 156
+1 Coordinated Maneuver (TDM) 6
+1 Deem Inferior (MH3) 57
+2 Writhing Chrysalis (MH3) 208
+1 Ruthless Predation (ONE) 182
+1 Prideful Parent (FDN) 21
+1 Uncharted Voyage (FDN) 53
+1 Helpful Hunter (FDN) 16
+1 Oblivion Ring (MM2) 29
+1 Planar Disruption (ONE) 28
+1 Kirtar's Desire (ODY) 27
+1 Realmbreaker's Grasp (MOM) 33
+1 Gearseeker Serpent (DFT) 43
+1 Eagles of the North (LTR) 7
+1 Syncopate (FIN) 80
+1 Sunspire Gatekeepers (DGM) 9
+1 Lembas (LTR) 243
+1 Voltaic Servant (DOM) 236
+1 Coal Stoker (DMR) 114
+1 Shock (M21) 159
+1 Khalni Heart Expedition (CMM) 899
+1 Abandon Attachments (TLA) 205
+1 Burst Lightning (FDN) 192
+1 Gift of Paradise (C21) 191
+1 Ahriman (FIN) 87
+1 Sandbenders' Storm (TLA) 34
+1 Airbending Lesson (TLA) 8
+1 Rabaroo Troop (TLA) 32
+1 Avatar Enthusiasts (TLA) 11
+1 Alchemax Slayer-Bots (SPE) 5
+1 Mouser Foundry (TMT) 96
+1 Purple Dragon Punks (TMT) 100
+1 Blooming Stinger (EOE) 174
+1 Dockworker Drone (EOE) 11
+1 Reroute Systems (EOE) 31
+1 Radiant Strike (EOE) 29
+1 Cloudsculpt Technician (EOE) 49
+1 Selfcraft Mechan (EOE) 74
+1 Sinister Cryologist (EOE) 75
+1 Michelangelo, Game Master (TMT) 118
+1 Primordial Pachyderm (TMT) 129
+1 Ragamuffin Raptor (TMT) 130
+3 Sewer-veillance Cam (TMT) 53
+1 Swarm Culler (EOE) 119
+1 Crustacean Commando (TMT) 33
+1 Negate (TMT) 47
+1 Utrom Scientists (TMT) 56
+1 Retro-Mutation (TMT) 51
+1 Return to the Sewers (TMT) 52
+1 Donatello, Turtle Techie (TMT) 37
+1 Stockman, Mad Fly-entist (TMT) 54
+1 Awaken the Bear (KTK) 129
+1 Outlaw Medic (OTJ) 23
+1 Armored Armadillo (OTJ) 3
+1 Eriette's Lullaby (OTJ) 10
+1 Steer Clear (OTJ) 31
+1 Corpseberry Cultivator (BLB) 210
+1 Lightning Strike (DFT) 136
+1 Dynamite Diver (DFT) 123
+1 Nimble Thopterist (DFT) 53
+1 Howler's Heavy (DFT) 46
+1 Flood the Engine (DFT) 42
+1 Glitch Ghost Surveyor (DFT) 44
+1 Stall Out (DFT) 66
+1 Midnight Mangler (DFT) 50
+1 Brightfield Mustang (DFT) 5
+1 Daring Mechanic (DFT) 11
+1 Lightwheel Enhancements (DFT) 20
+1 Skybox Ferry (DFT) 243
+1 Rimeshield Frost Giant (AFR) 310
+1 Half-Elf Monk (AFR) 19
+1 Prickly Pair (OTJ) 137
+1 Discerning Peddler (OTJ) 121
+1 Outlaws' Fury (OTJ) 136
+1 Iron-Fist Pulverizer (OTJ) 131
+1 Forced Adaptation (RVR) 140
+1 Terramorphic Expanse (MSC) 273
+1 Sandworm (FIN) 155
+1 Territorial Bruntar (EOE) 165
+1 Kindle the Inner Flame (ECL) 147
+1 Omni-Changeling (ECL) 62
+1 Lofty Dreams (ECL) 58
+1 Rime Chill (ECL) 64
+1 Squawkroaster (ECL) 160
+1 Sear (ECL) 154
+1 Sourbread Auntie (ECL) 158
+1 Goatnap (ECL) 142
+1 Soulbright Seeker (ECL) 157
+1 Kinsbaile Aspirant (ECL) 21
+1 Flock Impostor (ECL) 16
+1 Crib Swap (ECL) 11
+1 Kithkeeper (ECL) 23
+1 Bark of Doran (ECL) 6
+1 Blossoming Defense (ECL) 167
+1 Dundoolin Weaver (ECL) 175
+1 Pummeler for Hire (ECL) 190
+1 Vinebred Brawler (ECL) 201
+1 Giantfall (ECL) 141
+1 Explosive Prodigy (ECL) 136
+1 Boulder Dash (ECL) 127
+1 Flamebraider (ECL) 139
+1 Secret Identity (SPM) 43
+1 School Daze (SPM) 42
+1 Prison Break (SPM) 61
+1 Twinflame Travelers (ECL) 248
+1 Voracious Tome-Skimmer (ECL) 250
+1 Morcant's Loyalist (ECL) 236
+1 Dimir Guildgate (C13) 284
+1 Zuko, Exiled Prince (TLA) 163
+1 Norin, Swift Survivalist (DSK) 145
+1 Sundering Archaic (SOS) 3
+1 Social Snub (SOS) 228
+1 Lecturing Scornmage (SOS) 87
+1 Growth Curve (SOS) 193
+1 Quandrix Charm (SOS) 217
+1 Aunt May (SPM) 3
+1 Sudden Strike (SPM) 19
+1 Diversion Specialist (DSK) 132
+1 Infernal Phantom (DSK) 141
+1 Irreverent Gremlin (DSK) 142
+1 Betrayer's Bargain (DSK) 126
+1 Reverberating Summons (TDM) 117
+1 Overwhelming Surge (TDM) 115
+1 Reckless Velocitaur (DFT) 144
+1 Spire Mechcycle (DFT) 147
+1 Push the Limit (DFT) 143
+1 Gimli, Counter of Kills (LTR) 129
+1 Veteran Beastrider (DFT) 226
+1 Karakyk Guardian (TDM) 198
+1 Pyretic Rebirth (MH3) 200
+1 Golden-Tail Trainer (MH3) 187
+1 Cori Mountain Stalwart (TDM) 175
+1 Riverwheel Sweep (TDM) 219
+1 Mammoth Bellow (TDM) 205
+1 Effortless Master (TDM) 181
+1 Biomechan Engineer (EOE) 213
+1 Syr Vondam, the Lucent (EOE) 232
+1 Mm'menon, Uthros Exile (EOE) 221
+1 Haliya, Ascendant Cadet (EOE) 218
+1 Sami, Ship's Engineer (EOE) 225
+1 Abundant Growth (ECC) 97
+1 Plant Elemental (POR) 181
+1 Marshal of the Lost (TDM) 207
+1 Waterbending Scroll (TLA) 81
+1 Systems Override (EOE) 161
+1 Sidequest: Play Blitzball // World Champion, Celestial Weapon (FIN) 158
+1 Shimmercreep (ECL) 120
+1 Perfect Intimidation (ECL) 115
+1 Retched Wretch (ECL) 117
+1 Brush Off (SOS) 39
+1 Truth or Tale (TSP) 89
+1 Shrouded Shepherd // Cleave Shadows (WOE) 236
+1 Dauntless Scrapbot (EOE) 237
+1 Bartolomé del Presidio (LCI) 224
+1 Glacial Dragonhunt (TDM) 188
+1 Heap Doll (UMA) 228
+1 Pyrrhic Strike (ECL) 30
+1 Wanderwine Farewell (ECL) 83
+1 Heartless Act (TLA) 103
+1 Illusion Spinners (ECL) 55
+1 Pictures of Spider-Man (SPM) 109
+1 Ezekiel Sims, Spider-Totem (SPM) 100
+1 Overkill (FIN) 109
+1 Diary of Dreams (SOS) 248
+1 Transcendent Archaic (SOS) 5
+1 Charging Strifeknight (SOS) 110
+1 Orysa, Tide Choreographer (SOS) 62
+1 Rescue Skiff (EOE) 32
+1 Scout for Survivors (EOE) 33
+1 Honored Knight-Captain (EOE) 22
+1 Pulsar Squadron Ace (EOE) 28
+1 Youthful Valkyrie (FDN) 149
+1 Shardmage's Rescue (DSK) 29
+1 Metastatic Evangel (MH3) 35
+1 Bat Colony (LCI) 5
+1 Heliod's Punishment (THB) 21
+1 Furious Forebear (TDM) 13
+1 Take Up Arms (BBD) 111
+1 Ixalli's Lorekeeper (LCI) 194
+1 Belligerent Yearling (LCI) 133
+1 Pyroclasm (DSK) 149
+1 Cathartic Parting (DSK) 171
+1 Puca's Eye (ECL) 259
+1 Encumbered Reejerey (ECL) 14
+1 Evershrike's Gift (ECL) 15
+1 Silver Sable, Mercenary Leader (SPM) 13
+1 Spider-UK (SPM) 17
+1 Air Nomad Legacy (TLA) 206
+1 Dragonfly Swarm (TLA) 215
+1 Spider-Girl, Legacy Hero (SPM) 149
+1 Kraven, Proud Predator (SPM) 132
+1 Growing Dread (DSK) 216
+1 Garland, Knight of Cornelia // Chaos, the Endless (FIN) 221
+1 Exdeath, Void Warlock // Neo Exdeath, Dimension's End (FIN) 220
+1 Fang, Fearless l'Cie (FIN) 99
+1 Vanille, Cheerful l'Cie (FIN) 211
+1 Scurry of Gremlins (MH3) 203
+1 Frontline Rush (TDM) 186
+1 Guidelight Pathmaker (DFT) 206
+1 Voyage Home (DFT) 227
+1 Dune Drifter (DFT) 323
+1 Cloudspire Coordinator (DFT) 196
+1 Cruel Administrator (TLA) 213
+1 Hei Bai, Spirit of Balance (TLA) 225
+1 Foggy Swamp Spirit Keeper (TLA) 222
+1 White Lotus Reinforcements (TLA) 251
+1 Sun Warriors (TLA) 244
+1 Rite of the Moth (DSK) 229
+1 Virulent Silencer (EOE) 248
+1 All-Fates Scroll (EOE) 234
+1 Summon: Esper Ramuh (FIN) 161
+1 Noggle Robber (ECL) 237
+1 Eclipsed Elf (ECL) 336
+1 Clachan Festival (ECL) 10
+1 Lessons from Life (TMT) 155
+1 The Last Ronin's Technique (TMT) 12
+1 Memory Guardian (DFT) 49
+1 Diversion Unit (DFT) 41
+1 Locust Spray (DFT) 95
+1 Ancient Vendetta (DFT) 75
+1 Adrenaline Jockey (DFT) 112
+1 Everything Pizza (TMT) 173
+1 Henchbots (TMT) 174
+1 Turtle Blimp (TMT) 180
+1 Go Ninja Go (TMT) 149
+1 Genghis Frog (TMT) 148
+1 Karai's Technique (TMT) 152
+1 Karai, Future of the Foot (TMT) 151
+1 The Neutrinos (TMT) 160
+1 Pizza Face, Gastromancer (TMT) 163
+1 Baxter Stockman (TMT) 139
+1 Brilliance Unleashed (TMT) 141
+1 Courier of Comestibles (TMT) 112
+1 Mona Lisa, Science Geek (TMT) 123
+1 Novel Nunchaku (TMT) 127
+1 New Generation's Technique (TMT) 126
+1 Venus, Torn Between Worlds (TMT) 136
+1 West Wind Avatar (TMT) 137
+1 Donatello, Way with Machines (TMT) 38
+1 April, Reporter of the Weird (TMT) 30
+1 Bespoke Bō (TMT) 31
+1 Donatello's Technique (TMT) 39
+1 Ooze Spill (TMT) 48
+1 Metalhead (TMT) 44
+1 Hard-Won Jitte (TMT) 91
+1 Wingnut, Bat on the Belfry (TMT) 110
+1 Spicy Oatmeal Pizza (TMT) 109
+1 Old Hob, Alleycat Blues (TMT) 99
+1 Commence the Endgame (DRC) 38
+1 General Traag, Heart of Stone (TMT) 90
+1 Dimensional Exile (TMT) 4
+1 Koya, Death from Above (TMT) 11
+1 Mighty Mutanimals (TMT) 21
+1 Spectacular Skywhale (SOS) 229
+1 Stand Up for Yourself (SOS) 34
+1 Soaring Stoneglider (SOS) 32
+1 Group Project (SOS) 17
+1 Daydream (SOS) 9
+1 Pigment Wrangler // Striking Palette (SOS) 126
+1 Archaic's Agony (SOS) 107
+1 Living History (SOS) 121
+1 Divergent Equation (SOS) 43
+1 Muse Seeker (SOS) 60
+1 Matterbending Mage (SOS) 59
+1 Encouraging Aviator // Jump (SOS) 46
+1 Release the Dogs (TDC) 127
+1 Knight of Grace (FDN) 576
+1 Dawnwing Marshal (FDN) 570
+1 Devout Decree (FDN) 571
+1 Tam, Observant Sequencer // Deep Sight (SOS) 237
+1 Proctor's Gaze (SOS) 213
+1 Startled Relic Sloth (SOS) 233
+1 Lluwen, Exchange Student // Pest Friend (SOS) 199
+1 Molten Note (SOS) 204
+1 Fractal Tender (SOS) 190
+1 Stirring Honormancer (SOS) 234
+1 Killian's Confidence (SOS) 197
+1 Infirmary Healer // Stream of Life (SOS) 152
+1 Environmental Scientist (SOS) 147
+1 Lumaret's Favor (SOS) 153
+1 Emil, Vastlands Roamer (SOS) 146
+1 Thornfist Striker (SOS) 164
+1 Pestbrood Sloth (SOS) 157
+1 Fire Nation Warship (TLA) 256
+1 Elixir (FIN) 256
+1 Relentless X-ATM092 (FIN) 268
+1 Take Up the Shield (OTJ) 34
+1 Wanted Griffin (OTJ) 38
+1 Inventive Wingsmith (OTJ) 17
+1 Sterling Keykeeper (OTJ) 32
+1 Three Tree Mascot (FDN) 682
+1 Conduit Goblin (MH3) 179
+1 Riddle Gate Gargoyle (MH3) 201
+1 Cyclops Superconductor (MH3) 182
+1 Expanding Ooze (MH3) 184
+1 Boneyard Desecrator (OTJ) 81
+1 Skulduggery (OTJ) 107
+1 Apothecary Stomper (FDN) 99
+1 Sanguine Syphoner (FDN) 68
+1 Gutless Plunderer (FDN) 60
+1 Deathless Pilot (DFT) 82
+1 Syphon Fuel (DFT) 108
+1 Thunderhead Gunner (DFT) 148
+1 Gastal Blockbuster (DFT) 128
+1 Magmakin Artillerist (DFT) 137
+1 Prowcatcher Specialist (DFT) 142
+1 Gilded Ghoda (DFT) 130
+1 Ring of the Lucii (FIN) 269
+1 Angel's Tomb (INR) 253
+1 Walking Skyscraper (NEO) 263
+1 Worn Powerstone (MH3) 298
+1 Sunbird Standard // Sunbird Effigy (LCI) 262
+1 Jeskai Monument (TDM) 244
+1 Adventuring Gear (FDN) 249
+1 Ent-Draught Basin (LTR) 238
+1 Temur Monument (TDM) 248
+1 Ambrosia Whiteheart (FIN) 6
+1 Airbender's Reversal (TLA) 7
+1 Fancy Footwork (TLA) 19
+1 Invasion Reinforcements (TLA) 24
+1 Battle Menu (FIN) 9
+1 Reassembling Skeleton (TDC) 195
+1 Gollum's Bite (LTR) 85
+1 The Creation of Avacyn (MH3) 86
+1 Yathan Tombguard (TDM) 100
+1 Dryad Militant (GK1) 111
+1 Flopsie, Bumi's Buddy (TLA) 179
+1 Bumi, King of Three Trials (TLA) 169
+1 Earth Kingdom General (TLA) 173
+1 Clash of the Eikons (FIN) 180
+1 Cactuar (FIN) 177
+1 Torgal, A Fine Hound (FIN) 208
+1 Wayspeaker Bodyguard (TDM) 34
+1 Canyon Vaulter (DFT) 8
+1 Alacrian Armory (DFT) 2
+1 Adelbert Steiner (FIN) 3
+1 Ashe, Princess of Dalmasca (FIN) 7
+1 Soul Snare (MH2) 266
+1 Shire Shirriff (LTR) 30
+1 Ashes to Ashes (4ED) 119
+1 Lost to Legend (LTR) 22
+1 Éowyn, Lady of Rohan (LTR) 10
+1 Teeming Dragonstorm (TDM) 30
+1 Healer's Flock (MH2) 16
+1 Veteran Survivor (DSK) 40
+1 Splitskin Doll (DSK) 33
+1 Optimistic Scavenger (DSK) 21
+1 Savior of the Small (DSK) 27
+1 Sun-Blessed Healer (FDN) 25
+1 Return to Dust (CMM) 52
+1 Gallant Strike (DFT) 13
+1 Loxodon Battle Priest (TDM) 15
+1 Starry-Eyed Skyrider (TDM) 25
+1 Emergency Eject (EOE) 14
+1 Ambrosia Whiteheart (FIN) 325
+1 Abzan Battle Priest (MOC) 164
+1 Etherium Pteramander (MH3) 92
+1 Huntmaster of the Fells // Ravager of the Fells (SLD) 700
+1 Wretched Doll (DFT) 111
+1 Iceridge Serpent (TDM) 49
+1 Riverwalk Technique (TDM) 54
+1 Riling Dawnbreaker // Signaling Roar (TDM) 292
+1 Mandibular Kite (MH3) 34
+1 Phantom Train (FIN) 110
+1 Summon: Anima (FIN) 120
+1 Osseous Sticktwister (DSK) 112
+1 Gaius van Baelsar (FIN) 102
+1 Evil Reawakened (FIN) 98
+1 Destined Confrontation (TLA) 15
+1 Rangers' Refueler (DFT) 55
+1 Elrond, Lord of Rivendell (LTR) 49
+1 Sleep Magic (FIN) 74
+1 Inspiration from Beyond (FDN) 43
+1 Ioreth of the Healing House (LTR) 56
+1 Horses of the Bruinen (LTR) 55
+1 Dragonstorm Forecaster (TDM) 43
+1 Paranormal Analyst (DSK) 69
+1 Sway of Illusion (INV) 77
+1 Fear of Failed Tests (DSK) 55
+1 Cursed Windbreaker (DSK) 47
+1 Meneldor, Swift Savior (LTR) 62
+1 Caelorna, Coral Tyrant (DFT) 40
+1 Chart a Course (LCI) 48
+1 Aegis Sculptor (TDM) 35
+1 Spectral Sailor (FDN) 164
+1 Chameleon, Master of Disguise (SPM) 27
+1 Atomic Microsizer (EOE) 47
+1 Codecracker Hound (EOE) 50
+1 Summon: Shiva (FIN) 78
+1 Relm's Sketching (FIN) 67
+1 Psychic Impetus (CLU) 92
+1 Veteran Ice Climber (TDM) 64
+1 Artistic Refusal (MOM) 46
+1 Loyal Drake (CMM) 104
+1 Captivating Gyre (M20) 51
+1 Anchor to Reality (NEO) 45
+1 Awakened Awareness (NEO) 47
+1 Behold the Unspeakable // Vision of the Unspeakable (NEO) 48
+1 Reality Heist (NEO) 75
+1 Eagle Vision (ACR) 17
+1 Escape Detection (ACR) 18
+1 Nebelgast Intruder (MID) 64
+1 Brainsurge (MH3) 53
+1 Staunch Crewmate (LCI) 79
+1 Rufus Shinra (FIN) 238
+1 Black Waltz No. 3 (FIN) 214
+1 Zidane, Tantalus Thief (FIN) 251
+1 Cloud of Darkness (FIN) 217
+1 Gladiolus Amicitia (FIN) 224
+1 Omega, Heartless Evolution (FIN) 236
+1 Gastal Thrillseeker (DFT) 205
+1 Lagorin, Soul of Alacria (DFT) 211
+1 Rocketeer Boostbuggy (DFT) 220
+1 Perforating Artist (FDN) 124
+1 Dreadwing Scavenger (FDN) 118
+1 Bilbo, Retired Burglar (LTR) 196
+1 Butterbur, Bree Innkeeper (LTR) 197
+1 Arwen Undómiel (LTR) 194
+1 Gandalf's Sanction (LTR) 208
+1 Uglúk of the White Hand (LTR) 235
+1 Old Man Willow (LTR) 217
+1 Friendly Rivalry (LTR) 204
+1 Mauhúr, Uruk-hai Captain (LTR) 214
+1 Gwaihir the Windlord (LTR) 210
+1 Legolas, Counter of Kills (LTR) 212
+1 Prince Imrahil the Fair (LTR) 219
+1 Rise of the Witch-king (LTR) 221
+1 Forest (ELD) 269
+1 Drag to the Roots (DSK) 213
+1 Lilysplash Mentor (BLB) 222
+1 Jeskai Shrinekeeper (TDM) 197
+1 Arno Dorian (ACR) 47
+1 Gremlin Tamer (DSK) 215
+1 Fear of Infinity (DSK) 214
+1 Intruding Soulrager (DSK) 218
+1 Baseball Bat (DSK) 209
+1 Midnight Mayhem (DSK) 222
+1 Shrewd Storyteller (DSK) 232
+1 Dragonclaw Strike (TDM) 180
+1 Defibrillating Current (TDM) 177
+1 Kraul Whipcracker (MKM) 213
+1 Runescale Stormbrood // Chilling Screech (TDM) 221
+1 Wildfire Wickerfolk (DSK) 239
+1 Gleaming Geardrake (MKM) 205
+1 Tractor Beam (EOE) 82
+1 Cerebral Download (EOE) 48
+1 Locke Cole (FIN) 234
+1 Ignis Scientia (FIN) 227
+1 Strongbox Raider (FDN) 96
+1 Dragon Trainer (FDN) 84
+1 Lightning Strike (XLN) 149
+1 Cacophony Scamp (ONE) 124
+1 War-Name Aspirant (KTK) 126
+1 Tyrox, Saurid Tyrant (DFT) 149
+1 Impending Doom (THB) 139
+1 Éomer of the Riddermark (LTR) 121
+1 Fear, Fire, Foes! (LTR) 125
+1 War Balloon (TLA) 159
+1 Magic Missile (AFR) 154
+1 Freya Crescent (FIN) 138
+1 Reiterating Bolt (MH3) 134
+1 Vengeful Possession (DSK) 162
+1 Amped Raptor (MH3) 114
+1 Diamond Pick-Axe (LCI) 143
+1 Debris Field Crusher (EOE) 131
+1 Dowsing Device // Geode Grotto (LCI) 146
+1 Lithobraking (EOE) 142
+1 Invasive Maneuvers (EOE) 137
+1 Terrapact Intimidator (EOE) 164
+1 Shockmaw Dragon (FRF) 114
+1 Unsparing Boltcaster (TDM) 130
+1 Sunset Strikemaster (TDM) 126
+1 Painter's Studio // Defaced Gallery (DSK) 147
+1 Zurgo's Vanguard (TDM) 133
+1 Summon: Fenrir (FIN) 203
+1 Coliseum Behemoth (FIN) 181
+1 Ride the Shoopuf (FIN) 197
+1 Quina, Qu Gourmet (FIN) 194
+2 Sazh's Chocobo (FIN) 200
+1 Quickbeam, Upstart Ent (LTR) 183
+1 Synchronized Charge (TDM) 162
+1 Defiant Survivor (DSK) 175
+1 House Cartographer (DSK) 185
+1 Patchwork Beastie (DSK) 195
+1 Fear of Exposure (DSK) 177
+1 Gift of Strands (LTR) 170
+1 Glorfindel, Dauntless Rescuer (LTR) 171
+1 Might of Old Krosa (2X2) 153
+1 Meriadoc Brandybuck (LTR) 177
+1 Attuned Hunter (TDM) 135
+1 Disruptive Stormbrood // Petty Revenge (TDM) 178
+1 Sage of the Fang (TDM) 155
+1 Encroaching Dragonstorm (TDM) 142
+1 Formation Breaker (TDM) 143
+1 Eumidian Terrabotanist (EOE) 180
+1 Close Encounter (EOE) 176
+1 Broodguard Elite (EOE) 175
+1 Pull Through the Weft (EOE) 202
+1 Meltstrider Eulogist (EOE) 197
+1 Glacier Godmaw (EOE) 188
+1 Clockwork Percussionist (DSK) 130
+1 Sterling Hound (OTJ) 249
+1 Take the Fall (OTJ) 73
+1 Drover Grizzly (OTJ) 161
+1 Giant Beaver (OTJ) 165
+1 Wizard's Rockets (LTR) 252
+1 Haunt of the Dead Marshes (LTR) 90
+1 Lash of the Balrog (LTR) 92
+1 Laughing Mad (FIN) 143
+1 Electrozoa (MH3) 60
+1 Skoa, Embermage (MH3) 138
+1 Molten Gatekeeper (MH3) 128
+1 Smelted Chargebug (MH3) 139
+1 Tunnel Surveyor (DSK) 76
+1 Piranha Fly (DSK) 70
+1 Vanish from Sight (DSK) 82
+1 Hand That Feeds (DSK) 139
+1 Rampaging Soulrager (DSK) 151
+1 Glassworks // Shattered Yard (DSK) 137
+1 Merfolk Secretkeeper // Venture Deeper (ELD) 53
+1 Youthful Knight (ELD) 37
+1 Shock (M20) 160
+1 Recumbent Bliss (DDH) 26
+1 Deadshot Minotaur (ARB) 52
+1 Expand the Sphere (ONE) 168
+1 Venomous Brutalizer (ONE) 193
+1 Noxious Assault (ONE) 176
+1 Evolving Adaptive (ONE) 167
+1 Sylvok Battle-Chair (ONE) 184
+1 Gaea's Blessing (DOM) 161
+1 Wirewood Symbiote (MH3) 288
+1 Splinterfright (INR) 217
+1 Overrun (FDN) 230
+1 Jade Mage (CMM) 298
+1 Altanak, the Thrice-Called (DSK) 166
+1 Inspiring Call (FDN) 226
+1 Annoyed Altisaur (MH3) 284
+1 Hydra Trainer (MH3) 159
+1 Traveling Botanist (TDM) 164
+1 Greenbelt Guardian (DFT) 164
+1 Plow Through (DFT) 174
+1 Terrian, World Tyrant (DFT) 182
+1 Wildwood Scourge (FDN) 236
+1 Prismari Charm (SOS) 211
+1 Supreme Will (CMR) 102
+1 Stress Dream (SOS) 235
+1 Witherbloom Charm (SOS) 244
+1 Tainted Treats (TMT) 170
+1 Leonardo, Leader in Blue (TMT) 16
+1 Green Goblin, Revenant (SPM) 130
+1 Rhino, Barreling Brute (SPM) 140
+1 Ty Lee, Artful Acrobat (TLA) 158
+1 Combustion Technique (TLA) 128
+1 Hobgoblin, Mantled Marauder (SPM) 80
+1 Wisecrack (SPM) 98
+1 Superior Foes of Spider-Man (SPM) 96
+1 Shocker, Unshakable (SPM) 89
+1 Buzzard-Wasp Colony (TLA) 88
+1 Unlucky Cabbage Merchant (TLA) 201
+1 The Boulder, Ready to Rumble (TLA) 168
+1 Spiders-Man, Heroic Horde (SPM) 117
+1 Spider-Suit (SPM) 176
+1 Teo, Spirited Glider (TLA) 74
+1 Ember Island Production (TLA) 48
+1 Katara, Bending Prodigy (TLA) 59
+1 Honest Work (TLA) 55
+1 Artistic Process (SOS) 108
+1 Practiced Scrollsmith (SOS) 210
+1 Cuboid Colony (SOS) 183
+1 Quakestrider Ceratops (FDN) 110
+1 Peregrin Took (LTR) 181
+1 Dúnedain Rangers (LTR) 159
+1 The Prima Vista (FIN) 64
+1 Quistis Trepe (FIN) 66
+1 Thermo-Alchemist (INR) 174
+1 Rust Monster (AFR) 321
+1 Dragon Mage (FDN) 621
+1 Marauding Dreadship (MOM) 153
+1 Gristle Glutton (ECL) 144
+1 Friendly Ghost (DSK) 12
+1 Unforgiving Aim (ECL) 200
+1 Wildvine Pummeler (ECL) 203
+1 Emerge from the Cocoon (DSK) 5
+1 Goldmeadow Nomad (ECL) 18
+1 Prideful Feastling (ECL) 238
+1 Rooftop Percher (ECL) 2
+1 Fear of Immobility (DSK) 10
+1 Failed Fording (OTJ) 47
+1 Stop Cold (OTJ) 72
+1 Shire Scarecrow (LTR) 249
+1 Gimli's Axe (LTR) 130
+1 Olog-hai Crusher (LTR) 140
+1 Swarming of Moria (LTR) 150
+1 Smite the Deathless (LTR) 148
+1 Gimli's Fury (LTR) 131
+1 Warbeast of Gorgoroth (LTR) 152
+1 Erebor Flamesmith (LTR) 122
+1 Vanguard Seraph (FDN) 28
+1 Fleeting Distraction (FDN) 155
+1 Run Away Together (FDN) 162
+1 Aegis Turtle (FDN) 150
+1 Gorehorn Raider (FDN) 89
+1 Goblin Surprise (FDN) 200
+1 Crackling Cyclops (FDN) 83
+1 Courageous Goblin (FDN) 82
+1 Turret Ogre (CLU) 152
+1 Reckless Abandon (DDN) 20
+1 Ritual of Rejuvenation (XLN) 32
+1 Makeshift Battalion (RVR) 22
+1 Martyr for the Cause (WAR) 23
+1 Totally Lost (WAR) 74
+1 Ashiok's Skulker (WAR) 40
+1 Duskmantle Operative (WAR) 88
+1 Argivian Phalanx (DMU) 5
+1 Magic Pot (FIN) 263
+1 Adventurer's Airship (FIN) 252
+1 Magitek Infantry (FIN) 25
+1 Thaumaton Torpedo (EOE) 246
+1 Survey Mechan (EOE) 245
+1 Plasma Bolt (EOE) 152
+1 Rig for War (EOE) 156
+1 Zookeeper Mechan (EOE) 170
+1 Kavaron Turbodrone (EOE) 141
+1 Drill Too Deep (EOE) 133
+1 Slagdrill Scrapper (EOE) 160
+1 Orbital Plunge (EOE) 149
+1 Intrepid Tenderfoot (EOE) 193
+1 Scorpion Sentinel (FIN) 72
+1 Resentful Revelation (FIN) 114
+1 Combust (MM2) 110
+1 Due Diligence (MKM) 14
+1 Museum Nightwatch (MKM) 25
+1 Topiary Panther (MKM) 179
+1 Loxodon Eavesdropper (MKM) 168
+1 Jaded Analyst (MKM) 62
+1 Projektor Inspector (MKM) 68
+1 Behind the Mask (MKM) 39
+1 Reasonable Doubt (MKM) 69
+1 Rubblebelt Braggart (MKM) 143
+1 Galvanize (MKM) 128
+1 Felonious Rage (MKM) 125
+1 Red Herring (MKM) 142
+1 The Chase Is On (MKM) 116
+1 Goblin Maskmaker (MKM) 130
+1 Sanguine Savior (MKM) 230
+1 Dog Walker (MKM) 197
+1 Fetid Gargantua (MH3) 94
+1 Gift of the Viper (MH3) 156
+1 Horrific Assault (MH3) 157
+1 Temperamental Oozewagg (MH3) 172
+1 Expel the Unworthy (MH3) 25
+1 Jolted Awake (MH3) 33
+1 Nyxborn Unicorn (MH3) 37
+1 Thraben Charm (MH3) 45
+1 Aerie Auxiliary (MH3) 18
+1 Ice Cream Kitty (TMT) 150
+1 Mouser Mark III (TMT) 159
+1 Mechanized Ninja Cavalry (TMT) 156
+1 Foot Elite (TMT) 146
+1 Slithering Cryptid (TMT) 168
+1 Putrid Pals (TMT) 165
+1 Punk Frogs (TMT) 164
+1 Foot Ninjas (TMT) 147
+1 Guac & Marshmallow Pizza (TMT) 116
+1 Common Crook (SPM) 53
+1 Giant Spider (DMR) 163
+1 Banishing Light (BLB) 1
+1 Scrap Compactor (DFT) 242
+1 Riptide Turtle (THB) 61
+1 Kindlespark Duo (BLB) 142
+1 Might of the Meek (BLB) 144
+1 Agate-Blade Assassin (BLB) 82
+1 Raccoon Rallier (BLB) 148
+1 Mocking Sprite (FDN) 159
+1 Make Your Move (FDN) 143
+1 Redcap Thief (WOE) 147
+1 Bashful Beastie (DSK) 169
+1 Gleaming Barrier (FDN) 252
+1 Moldering Gym // Weight Room (DSK) 190
+1 Rimefur Reindeer (WOE) 27
+1 Flourishing Strike (MH2) 159
+1 Venomsac Lagac (DFT) 185
+1 Leaping Ambush (WOE) 177
+1 Pilfering Hawk (KHM) 71
+1 Silken Strength (DFT) 180
+1 Spider-Man No More (SPM) 45
+1 Pumpkin Bombardment (SPM) 139
+1 Eidolon of Philosophy (THB) 48
+1 Soaring Drake (DMU) 66
+2 Nyxborn Hydra (MH3) 164
+1 Shore Up (DMU) 64
+1 Falkenrath Perforator (MID) 136
+1 Clarion Cathars (MID) 14
+1 Thirst for Meaning (DSC) 129
+1 Organ Hoarder (MID) 66
+1 Tavern Ruffian // Tavern Smasher (MID) 163
+1 Flummoxed Cyclops (THB) 135
+1 Setessan Training (M21) 205
+1 Inspire Awe (THB) 175
+1 Burn Bright (RVR) 103
+1 Olivia's Midnight Ambush (MID) 118
+1 Startle (MID) 78
+1 Essence Scatter (DMU) 49
+1 Plummet (THB) 194
+1 Dire Downdraft (BLB) 46
+1 Cautious Survivor (DSK) 172
+1 Pileated Provisioner (BLB) 25
+1 Shore Up (BLB) 69
+1 Skyskipper Duo (BLB) 71
+1 Rabbit Response (BLB) 26
+1 Horrid Vigor (DSK) 184
+2 Selfless Police Captain (SPM) 12
+4 Web Up (SPM) 21
+2 Enter the Enigma (DSK) 52
+3 Bedhead Beastie (DSK) 125
+3 Anthropede (DSK) 167
+2 Bear Trap (DSK) 243
+5 Bagel and Schmear (SPM) 161
+3 Humbling Elder (TDM) 48
+3 Grand Entryway // Elegant Rotunda (DSK) 15
+4 Eerie Gravestone (SPM) 163
+5 Subway Train (SPM) 178
+6 Spider-Bot (SPM) 173
+4 Passenger Ferry (SPM) 170
+3 Manhole Missile (TMT) 94
+3 Null Group Biological Assets (TMT) 98
+2 Tend the Sprigs (ECL) 197
+3 Chitinous Graspling (ECL) 211
+2 Uruk-hai Berserker (LTR) 112
+3 Boggart Prankster (ECL) 93
+4 Enraged Huorn (LTR) 162
+2 Dawn's Light Archer (ECL) 174
+2 Stalactite Dagger (ECL) 261
+2 Cowabunga! (TMT) 113
+4 Frog Butler (TMT) 114
+2 Drownyard Lurker (MH3) 3
+2 Retrofitted Transmogrant (MH3) 106
+3 Nightshade Dryad (MH3) 163
+2 Glimpse the Impossible (MH3) 124
+3 Cranial Ram (MH3) 180
+2 Poison the Well (SHM) 193
+3 World Map (FIN) 270
+3 Grapple with Death (SOS) 192
+3 Slash of Light (FIN) 32
+3 Undercity Dire Rat (FIN) 123
+3 Dwarven Castle Guard (FIN) 18
+3 Commune with Beavers (FIN) 182
+3 Wild Pack Squad (SPM) 23
+2 City Pigeon (SPM) 4
+4 Summon: Choco/Mog (FIN) 35
+4 Paladin's Arms (FIN) 28
+6 Whoosh! (SPM) 48
+4 Unstable Experiment (SPM) 47
+3 Scout the City (SPM) 113
+3 Magic Damper (FIN) 61
+2 Inspired Inventor (MH3) 32
+3 Solstice Zealot (MH3) 43
+5 Gaelicat (FIN) 22
+3 Virus Beetle (EOE) 124
+2 Aerith Rescue Mission (FIN) 5
+4 White Auracite (FIN) 41
+4 Thunder Magic (FIN) 165
+2 Blazing Bomb (FIN) 130
+4 Sabotender (FIN) 153
+4 Item Shopkeep (FIN) 142
+2 Red Mage's Rapier (FIN) 152
+2 Suplex (FIN) 164
+2 Mysidian Elder (FIN) 145
+4 Warrior's Sword (FIN) 169
+4 Call the Mountain Chocobo (FIN) 131
+5 Light of Judgment (FIN) 144
+5 Hill Gigas (FIN) 141
+2 Follow the Lumarets (SOS) 148
+3 Oracle's Restoration (SOS) 156
+2 Beetle-Headed Merchants (TLA) 86
+2 Sold Out (TLA) 119
+2 Callous Inspector (TLA) 89
+2 Deadly Precision (TLA) 95
+5 Town Greeter (FIN) 209
+6 Balamb T-Rexaur (FIN) 173
+5 Chocobo Kick (FIN) 178
+3 Gysahl Greens (FIN) 190
+4 Goobbue Gardener (FIN) 188
+2 Fractal Mascot (SOS) 189
+3 Send in the Pest (SOS) 100
+2 Bogwater Lumaret (SOS) 177
+2 Spirit Mascot (SOS) 230
+2 Potioner's Trove (SOS) 251
+3 Banishing Betrayal (SOS) 38
+3 Tenured Concocter (SOS) 163
+2 Rubble Rouser (SOS) 128
+2 Wild Hypothesis (SOS) 167
+2 Ascendant Dustspeaker (SOS) 8
+5 Elemental Mascot (SOS) 185
+3 Interjection (SOS) 22
+3 Essence Scatter (SOS) 47
+2 Strife Scholar // Awaken the Ages (SOS) 131
+2 Burrog Barrage (SOS) 141
+3 Stadium Tidalmage (SOS) 232
+3 EPF Point Squad (TMT) 145
+3 Buzz Bots (TMT) 32
+2 Rocksteady, Crash Courser (TMT) 131
+3 Make Your Move (TMT) 20
+2 Nobody (TMT) 161
+2 Mind Transfer Protocol (TMT) 45
+3 Bot Bashing Time (TMT) 85
+2 Uneasy Alliance (TMT) 28
+3 Wilt in the Heat (SOS) 243
+2 Masterful Flourish (SOS) 89
+3 Kraven's Cats (SPM) 104
+2 Spider-Islanders (SPM) 91
+4 Spider-Rex, Daring Dino (SPM) 116
+2 Stab (FDN) 71
+3 Professional Wrestler (SPM) 110
+2 Assert Perfection (ECL) 164
+2 Amazing Acrobatics (SPM) 25
+2 Sahagin (FIN) 71
+2 Gangly Stompling (ECL) 226
+2 Merrow Skyswimmer (ECL) 234
+2 Compassionate Healer (TLA) 13
+2 Earth Kingdom Soldier (TLA) 216
+2 Wanderbrine Preacher (ECL) 41
+2 Boneclub Berserker (ECL) 126
+2 Summit Sentinel (ECL) 73
+2 Timid Shieldbearer (ECL) 39
+2 Brambleback Brute (ECL) 128
+2 Rearing Embermare (SOS) 127
+2 Expressive Firedancer (SOS) 114
+2 Hydro-Channeler (SOS) 54
+2 Seize the Spoils (SOS) 129
+2 Landscape Painter // Vibrant Idea (SOS) 56
+2 Muse's Encouragement (SOS) 61
+2 Embrace the Paradox (SOS) 186
+2 Unexpected Assistance (ECL) 80
+2 Symbiote Spawn (SPE) 11
+4 Mechanical Mobster (SPM) 168
+2 Rock Soldiers (TMT) 107
+2 Cackling Prowler (FDN) 101
+2 Petrifying Meddler (MH3) 66
+4 Bard's Bow (FIN) 174
+4 Gigantoad (FIN) 187
+2 High-Flying Ace (TMT) 9
+2 Wary Thespian (FDN) 235
+3 Skyward Spider (SPM) 146
+2 Gallant Citizen (SPM) 129
+2 Guy in the Chair (SPM) 102
+4 Embermouth Sentinel (TDM) 242
+3 Dusyut Earthcarver (TDM) 141
+3 Sagu Wildling // Roost Seek (TDM) 157
+3 Underfoot Underdogs (TDM) 129
+3 Riling Dawnbreaker // Signaling Roar (TDM) 21
+2 Rescue Leopard (TDM) 116
+2 Jade-Cast Sentinel (TDM) 243
+2 Dragonback Lancer (TDM) 9
+4 Sultai Devotee (TDM) 160
+2 Feral Deathgorger // Dusk Sight (TDM) 80
+3 Grim Bauble (DFT) 88
+2 Lightfoot Technique (TDM) 14
+2 Molten Exhale (TDM) 113
+2 Poised Practitioner (TDM) 18
+3 Faithful Watchdog (MH3) 185
+2 Hexgold Slith (MH3) 30
+3 Tempest Harvester (MH3) 73
+4 Colossal Dreadmask (MH3) 148
+2 Engine Rat (DFT) 84
+2 Daring Thunder-Thief (OTJ) 41
+2 April O'Neil, Kunoichi Trainee (TMT) 3
+2 Vincent's Limit Break (FIN) 126
+2 Fight On! (FIN) 100
+2 Malboro (FIN) 106
+4 Cloudbound Moogle (FIN) 11
+2 Instant Ramen (FIN) 259
+2 Monk's Fist (FIN) 265
+5 Blitzball (FIN) 254
+2 Iron Giant (FIN) 260
+2 News Helicopter (SPM) 169
+3 Manifest Dread (DSK) 189
+3 Fear of Surveillance (DSK) 11
+4 Daggermaw Megalodon (DSK) 48
+2 Vicious Clown (DSK) 163
+3 Isolation at Orthanc (LTR) 57
+2 Grey Havens Navigator (LTR) 53
+3 Arwen's Gift (LTR) 39
+2 Deceive the Messenger (LTR) 47
+3 Birthday Escape (LTR) 43
+2 Surrounded by Orcs (LTR) 73
+2 Glorious Gale (LTR) 51
+2 Revive the Shire (LTR) 185
+3 Mushroom Watchdogs (LTR) 180
+2 Galadhrim Guide (LTR) 168
+2 Lothlórien Lookout (LTR) 175
+2 Bombadil's Song (LTR) 154
+2 Bag End Porter (LTR) 153
+3 Spider-Man, Brooklyn Visionary (SPM) 115
+3 Jump Scare (DSK) 17
+2 Flesh Burrower (DSK) 178
+2 Doc Ock's Henchmen (SPM) 30
+3 Beetle, Legacy Criminal (SPM) 26
+3 Oscorp Research Team (SPM) 40
+4 Doc Ock, Sinister Scientist (SPM) 29
+2 Lurking Lizards (SPM) 107
+3 Dreams of Laguna (FIN) 50
+3 Sage's Nouliths (FIN) 70
+2 Stuck in Summoner's Sanctum (FIN) 76
+2 Combat Tutorial (FIN) 48
+3 Tempest Hawk (TDM) 31
+2 Reputable Merchant (TDM) 217
+2 Wingspan Stride (TDM) 66
+2 Ringing Strike Mastery (TDM) 53
+2 Salt Road Packbeast (TDM) 23
+2 Sarkhan's Resolve (TDM) 158
+3 Seize Opportunity (TDM) 119
+3 Ice Flan (FIN) 55
+2 Dirgur Island Dragon // Skimming Strike (TDM) 40
+2 Snakeskin Veil (TDM) 159
+2 Highspire Bell-Ringer (TDM) 47
+2 Geyser Leaper (TLA) 52
+2 Flexible Waterbender (TLA) 50
+2 Weapons Vendor (FIN) 40
+2 Feed the Flames (ECL) 137
+2 Spider-Man, Web-Slinger (SPM) 16
+3 Slip On the Ring (LTR) 31
+2 Soothing of Sméagol (LTR) 70
+2 Hithlain Knots (LTR) 54
+2 Unsummon (M20) 78
+3 Aquitect's Defenses (ECL) 44
+2 Rebellious Captives (TLA) 191
+3 Kyoshi Warriors (TLA) 26
+2 Blitzball Shot (FIN) 176
+3 Airship Crash (FIN) 171
+4 Prishe's Wanderings (FIN) 193
+2 Loporrit Scout (FIN) 192
+3 You're Not Alone (FIN) 44
+2 Throw from the Saddle (OTJ) 185
+2 Temur Tawnyback (TDM) 229
+3 Ripchain Razorkin (DSK) 154
+5 Shambling Cie'th (FIN) 117
+2 Amateur Hero (SPE) 1
+2 Thwip! (SPM) 20
+2 Living Brain, Mechanical Marvel (SPM) 167
+2 Scarlet Spider, Kaine (SPM) 143
+2 Stegron the Dinosaur Man (SPM) 95
+2 Kapow! (SPM) 103
+5 Flying Octobot (SPM) 31
+2 Lunatic Pandora (FIN) 262
+2 Sun-Spider, Nimble Webber (SPM) 154
+2 Raging Goblinoids (SPM) 85
+2 Masked Meower (SPM) 82
+3 Mob Lookout (SPM) 136
+3 Treetop Freedom Fighters (TLA) 156
+3 Fire Nation Raider (TLA) 135
+2 Rocky Rebuke (TLA) 193
+2 Giant Koi (TLA) 53
+2 Waterbending Lesson (TLA) 80
+2 Water Tribe Captain (TLA) 41
+2 Jeong Jeong's Deserters (TLA) 25
+2 Grow Extra Arms (SPM) 101
+3 Fowl Strike (MH3) 155
+2 Drossclaw (MH3) 89
+3 Voidpouncer (MH3) 143
+2 Wing It (MH3) 48
+2 Monstrous Emergence (DSK) 191
+2 Trained Arynx (OTJ) 36
+2 Unfathomable Truths (MH3) 77
+2 Sarpadian Simulacrum (MH3) 135
+2 Incinerating Blast (FDN) 90
+3 Spitfire Lagac (FDN) 208
+2 Fog on the Barrow-Downs (LTR) 16
+2 Mouser Attack! (TMT) 95
+2 Icecave Crasher (EOE) 191
+3 Meltstrider's Gear (EOE) 198
+3 Thawbringer (EOE) 211
+2 Diplomatic Relations (EOE) 177
+2 Germinating Wurm (EOE) 187
+2 Skystinger (EOE) 207
+2 Fungal Colossus (EOE) 184
+2 Sami's Curiosity (EOE) 203
+3 Drix Fatemaker (EOE) 178
+2 Exosuit Savior (EOE) 16
+2 Auxiliary Boosters (EOE) 5
+2 Focus Fire (EOE) 18
+2 Starport Security (EOE) 39
+3 Squire's Lightblade (EOE) 36
+2 Starfighter Pilot (EOE) 38
+2 Banishing Light (EOE) 6
+3 Brightspear Zealot (EOE) 8
+2 Flight-Deck Coordinator (EOE) 17
+2 Weftblade Enhancer (EOE) 44
+2 Decode Transmissions (EOE) 94
+2 Temporal Intervention (EOE) 120
+2 Illvoi Operative (EOE) 61
+2 Nanoform Sentinel (EOE) 71
+2 Starbreach Whale (EOE) 77
+3 Mechanozoa (EOE) 66
+2 Ankle Biter (OTJ) 153
+2 Vengeful Townsfolk (OTJ) 37
+2 Clamorous Ironclad (DFT) 117
+2 Lightshield Parry (DFT) 19
+2 Guidelight Matrix (DFT) 233
+2 Arborea Pegasus (AFR) 2
+2 Summon: Fat Chocobo (FIN) 202
+2 Opera Love Song (FIN) 147
+3 Samurai's Katana (FIN) 154
+3 Random Encounter (FIN) 150
+2 Pestered Wellguard (ECL) 63
+2 Sting-Slinger (ECL) 161
+2 Protective Response (ECL) 29
+2 Meanders Guide (ECL) 25
+2 Luminollusk (ECL) 179
+2 Shimmerwilds Growth (ECL) 194
+2 Benevolent River Spirit (TLA) 45
+3 Spider-Byte, Web Warden (SPM) 44
+2 Robotics Mastery (SPM) 41
+2 Madame Web, Clairvoyant (SPM) 36
+2 Jet's Brainwashing (TLA) 143
+2 Momentum Breaker (DFT) 97
+2 Costume Closet (SPM) 5
+3 Spider-Mobile (SPM) 174
+2 Shriek, Treblemaker (SPM) 144
+2 Flash Thompson, Spider-Fan (SPM) 7
+2 Inkshape Demonstrator (SOS) 21
+4 Teacher's Pest (SOS) 238
+3 Strixhaven Skycoach (SOS) 252
+2 Fractalize (SOS) 51
+3 Tablet of Discovery (SOS) 132
+5 Campus Composer // Aqueous Aria (SOS) 40
+3 Graduation Day (SOS) 16
+2 Rapturous Moment (SOS) 219
+3 Zimone's Experiment (SOS) 169
+3 Root Manipulation (SOS) 222
+3 Primary Research (SOS) 26
+2 Colossus of the Blood Age (SOS) 181
+2 Appa, Loyal Sky Bison (TLA) 9
+2 Team Avatar (TLA) 38
+2 Aang, the Last Airbender (TLA) 4
+2 Web-Shooters (SPM) 22
+2 Piggy Bank (DSK) 148
+2 Jeskai Brushmaster (TDM) 195
+2 Rinoa Heartilly (FIN) 237
+3 Tidus, Blitzball Star (FIN) 246
+2 Remnant Elemental (EOE) 155
+2 Cut Propulsion (EOE) 130
+3 Unexpected Request (FIN) 167
+2 Coral Sword (FIN) 134
+2 Self-Destruct (FIN) 157
+3 Prompto Argentum (FIN) 148
+2 Choco-Comet (FIN) 132
+2 Unbury (ECL) 123
+2 Alien Symbiosis (SPM) 50
+2 Swat Away (ECL) 75
+2 Damage Control Crew (SPM) 99
+2 Supportive Parents (SPM) 119
+2 Terrific Team-Up (SPM) 120
+2 Wall Crawl (SPM) 121
+4 Poison the Waters (FIN) 111
+2 Tonberry (FIN) 122
+2 Fractal Anomaly (SOS) 50
+2 Duel Tactics (SOS) 112
+3 Zack Fair (FIN) 45
+3 Crystal Fragments // Summon: Alexander (FIN) 13
+4 Delivery Moogle (FIN) 15
+2 Summon: Primal Garuda (FIN) 37
+3 Snow Villiers (FIN) 33
+4 The Crystal's Chosen (FIN) 14
+3 All-Fates Stalker (EOE) 3
+2 Dawnstrike Vanguard (EOE) 10
+2 Magitek Armor (FIN) 24
+2 Wedgelight Rammer (EOE) 43
+2 Guardian of the Forgotten (MH3) 28
+2 Surgical Suite // Hospital Room (DSK) 34
+2 G'raha Tia (FIN) 21
+2 Cloudspire Captain (DFT) 9
+4 Queen Brahne (FIN) 149
+3 Sorceress's Schemes (FIN) 159
+2 Barret Wallace (FIN) 129
+2 Wraith, Vicious Vigilante (SPM) 160
+2 Oblivious Bookworm (DSK) 225
+2 Skullsnap Nuisance (DSK) 234
+2 Embalmed Ascendant (DFT) 201
+4 Il Mheg Pixie (FIN) 57
+2 Reaping Willow (ECL) 240
+2 Saved by the Shell (TMT) 132
+3 Lita, Little Orphan Amphibian (TMT) 19
+2 Sanar, Unfinished Genius // Wild Idea (SOS) 223
+2 Kirol, History Buff // Pack a Punch (SOS) 198
+2 Scolding Administrator (SOS) 224
+2 Ennis, Debate Moderator (SOS) 14
+2 Garrison Excavator (SOS) 116
+2 Thunderdrum Soloist (SOS) 134
+2 Chelonian Tackle (SOS) 142
+2 Topiary Lecturer (SOS) 165
+2 Paradox Surveyor (SOS) 208
+3 Snooping Page (SOS) 227
+4 PuPu UFO (FIN) 266
+2 Mystical Tether (OTJ) 19
+2 Sterling Supplier (OTJ) 33
+2 Whiskerquill Scribe (BLB) 161
+4 Phoenix Down (FIN) 29
+2 Marshals' Pathcruiser (DFT) 236
+2 Saw (DSK) 254
+3 Auron's Inspiration (FIN) 8
+3 Sidequest: Catch a Fish // Cooking Campsite (FIN) 31
+3 Sidequest: Hunt the Mark // Yiazmat, Ultimate Mark (FIN) 119
+2 The Final Days (FIN) 101
+2 Diamond Weapon (FIN) 183
+2 Rockalanche (TLA) 192
+2 Earth Rumble (TLA) 174
+3 Galuf's Final Act (FIN) 186
+2 You Cannot Pass! (LTR) 38
+4 Circle of Power (FIN) 92
+2 Monoist Sentry (EOE) 111
+2 Reno and Rude (FIN) 113
+2 Al Bhed Salvagers (FIN) 88
+2 Dark Knight's Greatsword (FIN) 95
+3 Stolen Uniform (FIN) 75
+4 Ultros, Obnoxious Octopus (FIN) 83
+2 Scrabbling Skullcrab (DSK) 71
+2 Sokka's Haiku (TLA) 71
+2 Gigastorm Titan (EOE) 57
+2 Mouth of the Storm (EOE) 70
+2 Illvoi Infiltrator (EOE) 59
+2 Ether (FIN) 53
+3 Eject (FIN) 52
+3 Thief's Knife (FIN) 81
+2 Swallowed by Leviathan (FIN) 79
+2 Travel the Overworld (FIN) 82
+2 Valkyrie Aerial Unit (FIN) 84
+2 Stay Hidden, Stay Silent (DSK) 74
+2 Sidequest: Card Collection // Magicked Card (FIN) 73
+2 Inquisitive Glimmer (DSK) 217
+3 Sidequest: Raise a Chocobo // Black Chocobo (FIN) 201
+4 Chocobo Racetrack (FIN) 179
+3 Rydia's Return (FIN) 198
+2 Inspirited Vanguard (TDM) 146
+2 Hemosymbic Mite (EOE) 190
+4 Seedship Impact (EOE) 205
+2 Tapestry Warden (EOE) 209
+2 Boilerbilges Ripper (DSK) 127
+2 Ragged Playmate (DSK) 150
+2 Impossible Inferno (DSK) 140
+2 Harrier Strix (OTJ) 52
+2 Geyser Drake (OTJ) 51
+2 Slickshot Vault-Buster (OTJ) 68
+2 Seize the Secrets (OTJ) 64
+2 Tumbleweed Rising (OTJ) 187
+2 Bristlepack Sentry (OTJ) 156
+2 Freestrider Commando (OTJ) 162
+2 Mordor Trebuchet (LTR) 97
+3 Haste Magic (FIN) 140
+2 Sage of the Unknowable (MH3) 68
+2 Twist Reality (DSK) 77
+2 Meat Locker // Drowned Diner (DSK) 65
+3 Creeping Peeper (DSK) 46
+2 Erratic Apparition (DSK) 54
+2 Most Valuable Slayer (DSK) 144
+2 Rainveil Rejuvenator (TDM) 152
+2 Ooze Patrol (DFT) 172
+2 Spiritcall Enthusiast // Scrollboost (SOS) 33
+2 Web-Warriors (SPM) 159
+2 Molten Man, Inferno Incarnate (SPM) 84
+2 Ozai's Cruelty (TLA) 113
+2 Cargo Ship (FIN) 47
+2 Seized from Slumber (DSK) 28
+2 Living Phone (DSK) 20
+2 Rohirrim Lancer (LTR) 146
+2 Relentless Rohirrim (LTR) 144
+2 Fire of Orthanc (LTR) 127
+3 Rush the Room (LTR) 147
+3 Breaking of the Fellowship (LTR) 117
+2 Lightshell Duo (FDN) 157
+3 Chrome Companion (EOE) 236
+2 Oreplate Pangolin (EOE) 150
+3 Melded Moxite (EOE) 143
+3 Frontline War-Rager (EOE) 134
+2 Red Tiger Mechan (EOE) 154
+3 Kav Landseeker (EOE) 138
+2 Kavaron Skywarden (EOE) 140
+2 Nebula Dragon (EOE) 147
+2 Gene Pollinator (EOE) 186
+2 Waterspout Warden (BLB) 80
+3 Cryptid Inspector (DSK) 174
+2 Sinew Dancer (ONE) 286
+2 Grasping Longneck (DSK) 180
+2 Spineseeker Centipede (DSK) 199
+2 Tragic Slip (INR) 134
+2 Lose Focus (MH2) 49
+2 Squad Rallier (FDN) 24
+2 Elite Instructor (THB) 49
+2 Final Flare (THB) 134
+2 Mind Spiral (BLB) 59
+2 Sonar Strike (BLB) 32
+1 Mine Collapse (MH2) 135 *F*
+1 Sonic Seizure (TOR) 115
+1 Electrickery (GK1) 29
+1 Spellbinding Soprano (NCC) 53
