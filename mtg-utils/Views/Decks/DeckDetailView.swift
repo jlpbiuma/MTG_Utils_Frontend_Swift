@@ -9,6 +9,13 @@ struct DeckDetailView: View {
     @State private var viewModel: DeckDetailViewModel?
     @State private var showingEdhrec = false
     @State private var showingPricing = false
+    @State private var showingEdit = false
+    @State private var showingSortSheet = false
+    @State private var showingAddCard = false
+    @State private var selectedCard: DeckCardWithOwnership?
+    @State private var cardEditingEdition: DeckCardWithOwnership?
+    @State private var cardEditingQuantity: DeckCardWithOwnership?
+    @State private var cardToDelete: DeckCardWithOwnership?
 
     var body: some View {
         Group {
@@ -18,11 +25,18 @@ struct DeckDetailView: View {
                 ProgressView()
             }
         }
-        .navigationTitle(deckSummary.name)
+        .navigationTitle(viewModel?.detail?.name ?? deckSummary.name)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
-                if deckSummary.commander != nil {
+                Button {
+                    showingAddCard = true
+                } label: {
+                    Image(systemName: "plus")
+                }
+                .accessibilityLabel("Añadir carta")
+
+                if deckSummary.commander != nil || viewModel?.detail?.commander != nil {
                     Button {
                         showingEdhrec = true
                     } label: {
@@ -36,15 +50,22 @@ struct DeckDetailView: View {
                     Image(systemName: "eurosign.circle")
                 }
                 .accessibilityLabel("Precios")
+
+                Button {
+                    showingEdit = true
+                } label: {
+                    Image(systemName: "pencil")
+                }
+                .accessibilityLabel("Editar mazo")
             }
         }
         .task {
             if let deck = try? await appStore.store.allDecks().first(where: { $0.id == deckSummary.id }) {
-                let vm = DeckDetailViewModel(deck: deck, store: appStore.store)
+                let vm = DeckDetailViewModel(deck: deck, store: appStore.store, catalog: appStore.catalog, priceProvider: appStore.settings.priceProvider)
                 viewModel = vm
                 await vm.load()
             } else {
-                let vm = DeckDetailViewModel(deck: Deck(id: deckSummary.id, name: deckSummary.name), store: appStore.store)
+                let vm = DeckDetailViewModel(deck: Deck(id: deckSummary.id, name: deckSummary.name), store: appStore.store, catalog: appStore.catalog, priceProvider: appStore.settings.priceProvider)
                 viewModel = vm
             }
         }
@@ -62,131 +83,393 @@ struct DeckDetailView: View {
                 PricingSheet(detail: detail)
             }
         }
+        .sheet(item: $selectedCard) { card in
+            if let viewModel {
+                CardDetailView(
+                    card: card,
+                    unitPrice: viewModel.price(for: card),
+                    currencySymbol: viewModel.currencySymbol,
+                    provider: appStore.settings.priceProvider,
+                    client: appStore.client
+                )
+            }
+        }
+        .sheet(item: $cardEditingEdition) { card in
+            if let viewModel {
+                CardEditionEditorSheet(cardName: card.cardName, setCode: card.setCode) { setCode in
+                    await viewModel.updateEdition(id: card.id, setCode: setCode)
+                }
+            }
+        }
+        .sheet(item: $cardEditingQuantity) { card in
+            if let viewModel {
+                CardQuantityEditorSheet(cardName: card.cardName, quantity: card.quantity) { quantity in
+                    await viewModel.updateQuantity(id: card.id, quantity: quantity)
+                }
+            }
+        }
+        .alert(item: $cardToDelete) { card in
+            Alert(
+                title: Text("¿Eliminar \(card.cardName)?"),
+                message: Text("Se eliminará únicamente de este mazo."),
+                primaryButton: .destructive(Text("Eliminar")) {
+                    Task { await viewModel?.removeCard(id: card.id) }
+                },
+                secondaryButton: .cancel()
+            )
+        }
+        .sheet(isPresented: $showingAddCard) {
+            AddCardSheet(title: "Añadir carta") { card, quantity, isSideboard in
+                try await viewModel?.addCard(card, quantity: quantity, isSideboard: isSideboard)
+            }
+        }
+        .sheet(isPresented: $showingEdit) {
+            if let viewModel {
+                DeckEditorView(deck: viewModel.deck) { updatedDeck in
+                    var all = try await appStore.store.allDecks()
+                    if let index = all.firstIndex(where: { $0.id == updatedDeck.id }) {
+                        all[index] = updatedDeck
+                    } else {
+                        all.append(updatedDeck)
+                    }
+                    try await appStore.store.saveDecks(all)
+                    await viewModel.load()
+                }
+            }
+        }
+        .sheet(isPresented: $showingSortSheet) {
+            if let viewModel {
+                SortAndGroupSheet(
+                    isGrouped: Bindable(viewModel).isGrouped,
+                    sortField: Bindable(viewModel).sortField,
+                    sortDirection: Bindable(viewModel).sortDirection,
+                    filterMissingOnly: Bindable(viewModel).filterMissingOnly
+                )
+            }
+        }
     }
 
     @MainActor
     private func content(_ vm: DeckDetailViewModel) -> some View {
         @Bindable var vm = vm
 
-        return List {
-            if let detail = vm.detail {
-                header(detail)
+        return ZStack(alignment: .bottom) {
+            List {
+                if let detail = vm.detail {
+                    header(detail, vm: vm)
 
-                completionSection(detail)
+                    if vm.isGrouped {
+                        if !vm.groupsMainboard.isEmpty {
+                            ForEach(vm.groupsMainboard, id: \.key) { section in
+                                Section {
+                                    ForEach(section.cards) { card in
+                                        cardRow(card, isSideboard: false, vm: vm)
+                                    }
+                                } header: {
+                                    HStack {
+                                        Text("\(section.label) (\(section.totalCards))")
+                                            .font(.subheadline.weight(.semibold))
+                                            .foregroundStyle(.mtgText)
 
-                if vm.canTransferMissing {
+                                        Spacer()
+
+                                        if section.missingCards > 0 {
+                                            Text("Faltan \(section.missingCards)")
+                                                .font(.caption2.weight(.bold))
+                                                .foregroundStyle(Color.mtgRed)
+                                        }
+
+                                        if section.sectionTotalPrice > 0 {
+                                            Text(section.sectionTotalPrice.formattedPrice(symbol: section.currencySymbol))
+                                                .font(.caption2.monospacedDigit())
+                                                .foregroundStyle(.mtgTextSecondary)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        if !vm.mainboardSorted.isEmpty {
+                            Section("Mazo principal · \(vm.mainboardSorted.reduce(0) { $0 + $1.quantity }) cartas") {
+                                ForEach(vm.mainboardSorted) { card in
+                                    cardRow(card, isSideboard: false, vm: vm)
+                                }
+                            }
+                        }
+                    }
+
+                    if !vm.sideboardSorted.isEmpty {
+                        Section("Reservas · \(vm.sideboardSorted.reduce(0) { $0 + $1.quantity }) cartas") {
+                            ForEach(vm.sideboardSorted) { card in
+                                cardRow(card, isSideboard: true, vm: vm)
+                            }
+                        }
+                    }
+
+                    if !vm.matchingSearchText.isEmpty, vm.mainboardSorted.isEmpty, vm.sideboardSorted.isEmpty {
+                        Section {
+                            Text("No se encontraron cartas que coincidan con \"\(vm.deckSearchText)\".")
+                                .font(.subheadline)
+                                .foregroundStyle(.mtgTextSecondary)
+                                .padding(.vertical, 8)
+                        }
+                    }
+
+                    // Spacer at the bottom so content can scroll clear of floating button
+                    Section {
+                        Color.clear
+                            .frame(height: 52)
+                            .listRowBackground(Color.clear)
+                    }
+                } else if vm.isLoading {
+                    HStack {
+                        Spacer()
+                        ProgressView()
+                        Spacer()
+                    }
+                } else if let errorMessage = vm.errorMessage {
+                    Text(errorMessage)
+                        .foregroundStyle(Color.mtgRed)
+                }
+            }
+            .listStyle(.insetGrouped)
+            .refreshable { await vm.load() }
+            .searchable(text: $vm.deckSearchText, prompt: "Buscar carta en el mazo…")
+
+            if vm.detail != nil {
+                floatingSortButton(vm)
+                    .padding(.bottom, 16)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+        }
+    }
+
+    @MainActor
+    private func cardRow(_ card: DeckCardWithOwnership, isSideboard: Bool, vm: DeckDetailViewModel) -> some View {
+        Button {
+            selectedCard = card
+        } label: {
+            DeckCardRow(
+                card: card,
+                isSideboard: isSideboard
+            )
+        }
+        .buttonStyle(.plain)
+        .contextMenu {
+            Button {
+                selectedCard = card
+            } label: {
+                Label("Ver detalles", systemImage: "info.circle")
+            }
+            Button {
+                cardEditingEdition = card
+            } label: {
+                Label("Editar edición", systemImage: "rectangle.and.pencil.and.ellipsis")
+            }
+            Button {
+                cardEditingQuantity = card
+            } label: {
+                Label("Editar cantidad", systemImage: "number")
+            }
+            Divider()
+            Button(role: .destructive) {
+                cardToDelete = card
+            } label: {
+                Label("Eliminar del mazo", systemImage: "trash")
+            }
+        }
+    }
+
+    @MainActor
+    private func floatingSortButton(_ vm: DeckDetailViewModel) -> some View {
+        @Bindable var vm = vm
+
+        return Button {
+            showingSortSheet = true
+        } label: {
+            HStack(spacing: 7) {
+                Image(systemName: "slider.horizontal.3")
+                    .font(.system(size: 13, weight: .bold))
+
+                Text(vm.isGrouped ? "Agrupado" : "Sin agrupar")
+                    .font(.subheadline.weight(.semibold))
+
+                Text("•")
+                    .font(.caption2)
+                    .opacity(0.6)
+
+                Text(vm.sortField.displayName)
+                    .font(.subheadline.weight(.medium))
+
+                Image(systemName: vm.sortDirection == .ascending ? "arrow.up" : "arrow.down")
+                    .font(.system(size: 11, weight: .bold))
+            }
+            .foregroundStyle(.white)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 11)
+            .background(
+                Capsule()
+                    .fill(LinearGradient(
+                        colors: [Color.mtgAmber, Color.mtgAmberDeep],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ))
+                    .shadow(color: Color.black.opacity(0.4), radius: 8, x: 0, y: 4)
+            )
+            .overlay(
+                Capsule()
+                    .stroke(Color.white.opacity(0.25), lineWidth: 1)
+            )
+        }
+        .contextMenu {
+            Toggle(isOn: $vm.isGrouped) {
+                Label(vm.isGrouped ? "Desagrupar" : "Agrupar por tipo", systemImage: "rectangle.3.group")
+            }
+
+            Divider()
+
+            Menu("Ordenar por") {
+                ForEach(SortField.allCases) { field in
                     Button {
-                        Task { try? await vm.transferMissingToCollection() }
+                        vm.sortField = field
                     } label: {
-                        Label("Tengo las faltantes (marcarlas como poseídas)", systemImage: "checkmark.circle.fill")
-                            .font(.subheadline.weight(.medium))
-                            .frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .tint(.mtgGreen)
-                    .listRowSeparator(.hidden)
-                }
-
-                Section {
-                    CardSortingBar(field: $vm.sortField, direction: $vm.sortDirection)
-                } header: {
-                    Text("Ordenar")
-                }
-
-                if vm.filterMissingOnly {
-                    Toggle("Solo faltantes", isOn: $vm.filterMissingOnly)
-                        .listRowSeparatorTint(Color.mtgRed.opacity(0.4))
-                } else {
-                    Toggle("Solo faltantes", isOn: $vm.filterMissingOnly)
-                        .listRowSeparator(.hidden)
-                }
-
-                if !vm.mainboardSorted.isEmpty {
-                    Section("Mazo principal · \(detail.mainboardCount) cartas") {
-                        ForEach(vm.mainboardSorted) { card in
-                            DeckCardRow(card: card)
-                        }
-                    }
-                }
-
-                if !vm.sideboardSorted.isEmpty {
-                    Section("Reservas · \(detail.sideboardCount) cartas") {
-                        ForEach(vm.sideboardSorted) { card in
-                            DeckCardRow(card: card, isSideboard: true)
-                        }
-                    }
-                }
-            } else if vm.isLoading {
-                HStack {
-                    Spacer()
-                    ProgressView()
-                    Spacer()
-                }
-            } else if let errorMessage = vm.errorMessage {
-                Text(errorMessage)
-                    .foregroundStyle(Color.mtgRed)
-            }
-        }
-        .listStyle(.insetGrouped)
-        .refreshable { await vm.load() }
-    }
-
-    @MainActor
-    private func header(_ detail: DeckDetail) -> some View {
-        Section {
-            HStack(spacing: 12) {
-                if let commander = detail.commander {
-                    ZStack {
-                        if let uri = detail.commanderImageUri, let url = URL(string: uri) {
-                            CardImageView(url: url, placeholderText: nil)
+                        if vm.sortField == field {
+                            Label(field.displayName, systemImage: "checkmark")
                         } else {
-                            CardBackPlaceholder.view
+                            Text(field.displayName)
                         }
                     }
-                    .frame(width: 76, height: 104)
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
-                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.white.opacity(0.12), lineWidth: 1))
                 }
+            }
 
-                VStack(alignment: .leading, spacing: 6) {
-                    LabeledContent("Formato", value: detail.format)
-                    if let commander = detail.commander {
-                        LabeledContent("Comandante", value: commander)
-                            .lineLimit(2)
-                    }
-                    if let description = detail.description, !description.isEmpty {
-                        Text(description)
-                            .font(.caption)
-                            .foregroundStyle(.mtgTextSecondary)
+            Menu("Dirección") {
+                ForEach(SortDirection.allCases) { dir in
+                    Button {
+                        vm.sortDirection = dir
+                    } label: {
+                        if vm.sortDirection == dir {
+                            Label(dir.displayName, systemImage: "checkmark")
+                        } else {
+                            Text(dir.displayName)
+                        }
                     }
                 }
+            }
+
+            Divider()
+
+            Toggle(isOn: $vm.filterMissingOnly) {
+                Label("Solo faltantes", systemImage: "exclamationmark.circle")
             }
         }
     }
 
+    // MARK: Header (commander info + compact completion metrics)
+
     @MainActor
-    private func completionSection(_ detail: DeckDetail) -> some View {
+    private func header(_ detail: DeckDetail, vm: DeckDetailViewModel) -> some View {
         Section {
-            VStack(alignment: .leading, spacing: 10) {
-                HStack {
-                    Text("Completitud")
-                        .font(.subheadline.weight(.semibold))
-                    Spacer()
-                    Text(detail.completionPercentage.percentFormatted())
-                        .font(.headline.monospacedDigit())
-                        .foregroundStyle(detail.isComplete ? Color.mtgGreen : Color.mtgAmber)
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(spacing: 12) {
+                    if detail.commander != nil {
+                        ZStack {
+                            if let url = AppConfiguration.imageURL(from: detail.commanderImageUri) {
+                                CardImageView(url: url, placeholderText: nil)
+                            } else {
+                                CardBackPlaceholder.view
+                            }
+                        }
+                        .frame(width: 76, height: 104)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.white.opacity(0.12), lineWidth: 1))
+                    }
+
+                    VStack(alignment: .leading, spacing: 6) {
+                        LabeledContent("Formato", value: detail.format)
+                        if let commander = detail.commander {
+                            LabeledContent("Comandante", value: commander)
+                                .lineLimit(2)
+                        } else if detail.format == "Commander" {
+                            Button {
+                                showingEdit = true
+                            } label: {
+                                Label("Asignar comandante", systemImage: "person.crop.circle.badge.plus")
+                                    .font(.caption)
+                                    .foregroundStyle(.mtgAmber)
+                            }
+                            .buttonStyle(.plain)
+                        }
+
+                        HStack(spacing: 6) {
+                            if vm.commanderColorIdentity.isEmpty {
+                                if detail.commander != nil {
+                                    ManaPill(symbol: "C", style: .small)
+                                }
+                            } else {
+                                ForEach(vm.commanderColorIdentity, id: \.self) { sym in
+                                    ManaPill(symbol: sym, style: .small)
+                                }
+                            }
+
+                            Spacer()
+
+                            if let net = vm.priceSummary?.totalNetValue {
+                                VStack(alignment: .trailing, spacing: 1) {
+                                    Text(net.formattedPrice(symbol: vm.currencySymbol))
+                                        .font(.subheadline.weight(.semibold).monospacedDigit())
+                                        .foregroundStyle(.mtgText)
+                                    Text("Precio neto")
+                                        .font(.caption2)
+                                        .foregroundStyle(.mtgTextSecondary)
+                                }
+                            }
+                        }
+                    }
                 }
 
-                CompletionBar(progress: detail.completionPercentage)
-                    .frame(height: 12)
+                if let description = detail.description, !description.isEmpty {
+                    Text(description)
+                        .font(.caption)
+                        .foregroundStyle(.mtgTextSecondary)
+                }
 
-                KPIStripView(stats: [
-                    KPIStat(id: "total", label: "Cartas", value: "\(detail.totalCards)", systemImage: "shippingbox", tint: .mtgAmber),
-                    KPIStat(id: "owned", label: "Tienes", value: "\(detail.ownedCards)", systemImage: "checkmark.seal", tint: .mtgGreen),
-                    KPIStat(id: "missing", label: "Faltan", value: "\(detail.missingCardsCount)", systemImage: "exclamationmark.circle", tint: .mtgRed),
-                ])
+                Divider()
+
+                // Compact completion metrics (no icons)
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(spacing: 0) {
+                        compactMetric(value: "\(detail.totalCards)", label: "Cartas")
+                        compactMetric(
+                            value: (vm.priceSummary?.totalMissingValue ?? 0).formattedPrice(symbol: vm.currencySymbol),
+                            label: "Precio restante",
+                            valueColor: Color.mtgRed
+                        )
+                        compactMetric(value: "\(detail.missingCardsCount)", label: "Faltan", valueColor: Color.mtgRed)
+                        compactMetric(
+                            value: detail.completionPercentage.percentFormatted(),
+                            label: "Completitud",
+                            valueColor: detail.isComplete ? Color.mtgGreen : Color.mtgAmber
+                        )
+                    }
+
+                    CompletionBar(progress: detail.completionPercentage)
+                        .frame(height: 8)
+                }
             }
+            .padding(.vertical, 4)
         }
+    }
+
+    private func compactMetric(value: String, label: String, valueColor: Color = .mtgText) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(value)
+                .font(.subheadline.weight(.bold).monospacedDigit())
+                .foregroundStyle(valueColor)
+            Text(label)
+                .font(.caption2)
+                .foregroundStyle(.mtgTextSecondary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
@@ -197,51 +480,86 @@ struct DeckCardRow: View {
     var isSideboard = false
 
     var body: some View {
-        HStack(spacing: 10) {
+        HStack(alignment: .top, spacing: 10) {
+            // Preview de la carta a la izquierda
             ZStack {
-                if let uri = card.imageUri, let url = URL(string: uri) {
+                if let url = AppConfiguration.imageURL(from: card.imageUri) {
                     CardImageView(url: url, placeholderText: nil)
                 } else {
                     CardBackPlaceholder.view
                 }
             }
-            .frame(width: 30, height: 42)
-            .clipShape(RoundedRectangle(cornerRadius: 3))
-            .overlay(RoundedRectangle(cornerRadius: 3).stroke(Color.white.opacity(0.1), lineWidth: 0.5))
+            .frame(width: 38, height: 53)
+            .clipShape(RoundedRectangle(cornerRadius: 4))
+            .overlay(RoundedRectangle(cornerRadius: 4).stroke(Color.white.opacity(0.12), lineWidth: 0.5))
 
-            VStack(alignment: .leading, spacing: 3) {
-                HStack {
+            VStack(alignment: .leading, spacing: 4) {
+                // Fila 1: Cantidad + Nombre + Mana Cost
+                HStack(alignment: .center, spacing: 6) {
+                    Text("×\(card.quantity)")
+                        .font(.subheadline.weight(.bold).monospacedDigit())
+                        .foregroundStyle(.mtgAmber)
+
                     Text(card.cardName)
-                        .font(.subheadline.weight(.medium))
+                        .font(.subheadline.weight(.semibold))
                         .foregroundStyle(.mtgText)
                         .lineLimit(1)
+
+                    Spacer(minLength: 4)
+
                     ManaCostView(cost: card.manaCost)
                 }
 
-                HStack(spacing: 6) {
-                    Text("×\(card.quantity)")
-                        .font(.caption.monospacedDigit())
-                    Text(card.typeLine ?? "")
-                        .font(.caption2)
-                        .foregroundStyle(.mtgTextSecondary)
-                        .lineLimit(1)
-                    Spacer()
+                // Fila 2: Tipo + Insignia de Expansión. Los valores económicos
+                // se consultan juntos desde el botón de precios del mazo.
+                HStack(alignment: .center, spacing: 6) {
+                    if let typeLine = card.typeLine, !typeLine.isEmpty {
+                        Text(typeLine)
+                            .font(.caption2)
+                            .foregroundStyle(.mtgTextSecondary)
+                            .lineLimit(1)
+                    }
+
+                    Spacer(minLength: 4)
+
+                    SetExpansionBadge(setCode: card.setCode)
+                }
+
+                // Fila 3: Indicadores de posesión (falta, en colección, en otro mazo)
+                HStack(spacing: 5) {
                     if card.missingCount > 0 {
-                        Text("falta \(card.missingCount)")
-                            .font(.caption2.weight(.bold))
-                            .foregroundStyle(Color.mtgRed)
-                    } else {
-                        Text("completo")
-                            .font(.caption2.weight(.bold))
-                            .foregroundStyle(Color.mtgGreen)
+                        OwnershipStatusChip(
+                            text: "Falta \(card.missingCount)",
+                            systemImage: "exclamationmark.circle.fill",
+                            tint: .mtgRed
+                        )
+                    }
+
+                    if card.ownedInCollection > 0 {
+                        OwnershipStatusChip(
+                            text: "En colección: \(card.ownedInCollection)",
+                            systemImage: "checkmark.circle.fill",
+                            tint: .mtgGreen
+                        )
+                    }
+
+                    let otherCount = card.assignedInOtherDecks.reduce(0) { $0 + $1.quantity }
+                    if otherCount > 0 {
+                        OwnershipStatusChip(
+                            text: "En otro mazo (\(otherCount))",
+                            systemImage: "arrow.triangle.swap",
+                            tint: .mtgAmber
+                        )
                     }
                 }
+                .padding(.top, 1)
             }
         }
-        .padding(.vertical, 2)
+        .padding(.vertical, 3)
         .opacity(isSideboard ? 0.85 : 1)
     }
 }
+
 
 #Preview("Detalle") {
     NavigationStack {

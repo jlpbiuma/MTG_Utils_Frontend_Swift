@@ -2,8 +2,7 @@ import Foundation
 
 /// In-memory store for the demo, seeded with sample decks and a partial collection.
 /// Acts as the `AppDataStoring` persistence until Supabase is wired in Phase 2.
-@MainActor
-final class MockDataStore: AppDataStoring {
+final class MockDataStore: AppDataStoring, @unchecked Sendable {
     static let demoUserId = "00000000-0000-0000-0000-000000000001"
 
     private var decks: [Deck]
@@ -22,6 +21,69 @@ final class MockDataStore: AppDataStoring {
 
     func allDecks() async throws -> [Deck] {
         decks
+    }
+
+    func allDeckSummaries() async throws -> [DeckSummary] {
+        decks.map { deck in
+            DeckSummary(
+                id: deck.id,
+                userId: deck.userId,
+                name: deck.name,
+                format: deck.format,
+                description: deck.description,
+                commander: deck.commander,
+                commanderScryfallId: deck.commanderScryfallId,
+                commanderImageUri: deck.commanderImageUri,
+                createdAt: deck.createdAt,
+                updatedAt: deck.updatedAt,
+                totalCards: deck.cards.reduce(0) { $0 + $1.quantity },
+                uniqueCards: deck.cards.count,
+                ownedCards: deck.cards.reduce(0) { $0 + $1.quantity },
+                missingCardsCount: 0,
+                completionPercentage: 100.0
+            )
+        }
+    }
+
+    func deckDetail(id: String) async throws -> DeckDetail? {
+        guard let deck = decks.first(where: { $0.id == id }) else { return nil }
+        return DeckDetail(
+            id: deck.id,
+            userId: deck.userId,
+            name: deck.name,
+            format: deck.format,
+            description: deck.description,
+            commander: deck.commander,
+            commanderScryfallId: deck.commanderScryfallId,
+            commanderImageUri: deck.commanderImageUri,
+            createdAt: deck.createdAt,
+            updatedAt: deck.updatedAt,
+            totalCards: deck.cards.reduce(0) { $0 + $1.quantity },
+            uniqueCards: deck.cards.count,
+            ownedCards: deck.cards.reduce(0) { $0 + $1.quantity },
+            missingCardsCount: 0,
+            completionPercentage: 100.0,
+            cards: deck.cards.map { card in
+                DeckCardWithOwnership(
+                    id: card.id,
+                    deckId: card.deckId,
+                    cardScryfallId: card.cardScryfallId,
+                    cardName: card.cardName,
+                    quantity: card.quantity,
+                    assignedQuantity: card.assignedQuantity,
+                    isSideboard: card.isSideboard,
+                    isCommander: card.isCommander,
+                    manaCost: card.manaCost,
+                    typeLine: card.typeLine,
+                    imageUri: card.imageUri,
+                    setCode: card.setCode,
+                    ownedInCollection: card.quantity,
+                    availableToAssign: 0,
+                    assignedInOtherDecks: [],
+                    missingCount: 0
+                )
+            }
+        )
     }
 
     func saveDecks(_ newDecks: [Deck]) async throws {

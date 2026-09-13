@@ -30,6 +30,14 @@ struct ContentView: View {
             .tag(AppTab.collection)
 
             NavigationStack {
+                CardScannerView(appStore: appStore)
+            }
+            .tabItem {
+                Label("Escáner", systemImage: "viewfinder")
+            }
+            .tag(AppTab.scanner)
+
+            NavigationStack {
                 AccountView()
             }
             .tabItem {

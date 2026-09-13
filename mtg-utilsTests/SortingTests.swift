@@ -54,4 +54,38 @@ struct SortingTests {
         // instants (order 3) come first, then artifacts (order 5); name is the tiebreak.
         #expect(cards.map(\.name) == ["Counterspell", "Lightning Bolt", "Black Lotus", "Sol Ring"])
     }
+
+    @Test func extractsColorsInWubrgOrder() {
+        #expect(extractColors(from: "{2}{U}{B}") == ["U", "B"])
+        #expect(extractColors(from: "{R}{G}{W}") == ["W", "R", "G"])
+        #expect(extractColors(from: "{W/U}") == ["W", "U"])
+        #expect(extractColors(from: "{1}") == [])
+        #expect(extractColors(from: nil) == [])
+    }
+
+    @Test func extractsDeckColorsAggregated() {
+        let cards = [
+            DeckCard(id: "1", deckId: "d1", cardScryfallId: "s1", cardName: "Opt", quantity: 4, manaCost: "{U}"),
+            DeckCard(id: "2", deckId: "d1", cardScryfallId: "s2", cardName: "Lightning Bolt", quantity: 4, manaCost: "{R}"),
+            DeckCard(id: "3", deckId: "d1", cardScryfallId: "s3", cardName: "Sol Ring", quantity: 1, manaCost: "{1}")
+        ]
+        #expect(extractDeckColors(cards: cards) == ["U", "R"])
+    }
+
+    @Test func estimatesDeckPriceCorrectly() {
+        let cards = [
+            DeckCard(id: "1", deckId: "d1", cardScryfallId: "s1", cardName: "Snapcaster Mage", quantity: 1, typeLine: "Creature - Human Wizard"),
+            DeckCard(id: "2", deckId: "d1", cardScryfallId: "s2", cardName: "Island", quantity: 2, typeLine: "Basic Land - Island")
+        ]
+        let estimated = estimateDeckPrice(cards: cards)
+        // Snapcaster Mage = 29.99, Island = 0.15 * 2 = 0.30 -> Total 30.29
+        #expect(estimated == 30.29)
+    }
+
+    @Test func deckSortFieldDisplayNames() {
+        #expect(DeckSortField.completion.displayName == "Completitud")
+        #expect(DeckSortField.price.displayName == "Precio")
+        #expect(DeckSortField.name.displayName == "Nombre")
+        #expect(DeckSortField.date.displayName == "Fecha")
+    }
 }

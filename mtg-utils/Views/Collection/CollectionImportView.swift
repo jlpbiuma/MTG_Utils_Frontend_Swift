@@ -4,10 +4,11 @@ import SwiftUI
 
 struct CollectionImportView: View {
     @Environment(\.dismiss) private var dismiss
-    let onImport: ([CollectionCard]) async throws -> Void
+    /// Receives already-parsed cards and must update the local collection immediately.
+    /// Remote synchronization is deliberately handled outside this sheet.
+    let onImport: ([CollectionCard]) -> Void
 
     @State private var text = ""
-    @State private var isImporting = false
     @State private var previewCount: Int?
     @State private var errorMessage: String?
 
@@ -46,9 +47,9 @@ struct CollectionImportView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Añadir") {
-                        Task { await add() }
+                        add()
                     }
-                    .disabled(text.trimmingCharacters(in: .whitespaces).isEmpty || isImporting)
+                    .disabled(text.trimmingCharacters(in: .whitespaces).isEmpty)
                 }
             }
             .onChange(of: text) {
@@ -60,33 +61,24 @@ struct CollectionImportView: View {
     }
 
     @MainActor
-    private func add() async {
-        isImporting = true
+    private func add() {
         errorMessage = nil
-        defer { isImporting = false }
 
         do {
             let lines = try parseCollectionText(text)
-            let names = lines.map(\.name)
-
-            // Try to resolve metadata live; fall back to pending placeholders.
-            let resolved = (try? await searchResolve(names)) ?? [:]
-
+            // Import immediately with local placeholders. The card data can be enriched
+            // later; waiting for one network lookup per line makes large imports unusable.
             let cards: [CollectionCard] = lines.map { line in
-                let meta = resolved[normalizeCardName(line.name)]
                 return CollectionCard(
-                    cardScryfallId: meta?.scryfallId ?? "pending:\(normalizeCardName(line.name))",
-                    cardName: meta?.name ?? line.name,
+                    cardScryfallId: "pending:\(normalizeCardName(line.name))",
+                    cardName: line.name,
                     quantity: line.quantity,
-                    setCode: line.setCode ?? meta?.set,
-                    collectorNumber: line.collectorNumber ?? meta?.collectorNumber,
-                    manaCost: meta?.manaCost,
-                    typeLine: meta?.typeLine,
-                    imageUri: meta?.imageUri
+                    setCode: line.setCode,
+                    collectorNumber: line.collectorNumber
                 )
             }
 
-            try await onImport(cards)
+            onImport(cards)
             dismiss()
         } catch let error as ImportError {
             errorMessage = error.localizedDescription
@@ -95,10 +87,4 @@ struct CollectionImportView: View {
         }
     }
 
-    private func searchResolve(_ names: [String]) async -> [String: ResolvedCardData]? {
-        let client = ScryfallClient.shared
-        let resolved = try? await client.resolveCards(named: names)
-        guard let resolved else { return nil }
-        return Dictionary(resolved.map { (normalizeCardName($0.name), $0) }, uniquingKeysWith: { first, _ in first })
-    }
 }

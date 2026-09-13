@@ -58,6 +58,7 @@ struct DeckCard: Identifiable, Hashable {
     var manaCost: String?
     var typeLine: String?
     var imageUri: String?
+    var setCode: String?
 
     init(
         id: String = UUID().uuidString,
@@ -70,7 +71,8 @@ struct DeckCard: Identifiable, Hashable {
         isCommander: Bool = false,
         manaCost: String? = nil,
         typeLine: String? = nil,
-        imageUri: String? = nil
+        imageUri: String? = nil,
+        setCode: String? = nil
     ) {
         self.id = id
         self.deckId = deckId
@@ -83,6 +85,7 @@ struct DeckCard: Identifiable, Hashable {
         self.manaCost = manaCost
         self.typeLine = typeLine
         self.imageUri = imageUri
+        self.setCode = setCode
     }
 
     var isPending: Bool { cardScryfallId.hasPrefix("pending:") }
@@ -107,6 +110,8 @@ struct DeckSummary: Identifiable, Hashable {
     var ownedCards: Int
     var missingCardsCount: Int
     var completionPercentage: Double
+    var estimatedPrice: Double
+    var colors: [String]
 
     var isComplete: Bool { totalCards > 0 && missingCardsCount == 0 }
 
@@ -126,7 +131,9 @@ struct DeckSummary: Identifiable, Hashable {
         uniqueCards: Int = 0,
         ownedCards: Int = 0,
         missingCardsCount: Int = 0,
-        completionPercentage: Double = 0
+        completionPercentage: Double = 0,
+        estimatedPrice: Double = 0,
+        colors: [String] = []
     ) {
         self.id = id
         self.userId = userId
@@ -143,6 +150,8 @@ struct DeckSummary: Identifiable, Hashable {
         self.ownedCards = ownedCards
         self.missingCardsCount = missingCardsCount
         self.completionPercentage = completionPercentage
+        self.estimatedPrice = estimatedPrice
+        self.colors = colors
     }
 }
 
@@ -168,10 +177,47 @@ struct DeckCardWithOwnership: Identifiable, Hashable {
     var manaCost: String?
     var typeLine: String?
     var imageUri: String?
+    var setCode: String?
     var ownedInCollection: Int
     var availableToAssign: Int
     var assignedInOtherDecks: [OtherDeckAssignment]
     var missingCount: Int
+
+    init(
+        id: String,
+        deckId: String,
+        cardScryfallId: String,
+        cardName: String,
+        quantity: Int,
+        assignedQuantity: Int,
+        isSideboard: Bool,
+        isCommander: Bool,
+        manaCost: String?,
+        typeLine: String?,
+        imageUri: String?,
+        setCode: String? = nil,
+        ownedInCollection: Int,
+        availableToAssign: Int,
+        assignedInOtherDecks: [OtherDeckAssignment],
+        missingCount: Int
+    ) {
+        self.id = id
+        self.deckId = deckId
+        self.cardScryfallId = cardScryfallId
+        self.cardName = cardName
+        self.quantity = quantity
+        self.assignedQuantity = assignedQuantity
+        self.isSideboard = isSideboard
+        self.isCommander = isCommander
+        self.manaCost = manaCost
+        self.typeLine = typeLine
+        self.imageUri = imageUri
+        self.setCode = setCode
+        self.ownedInCollection = ownedInCollection
+        self.availableToAssign = availableToAssign
+        self.assignedInOtherDecks = assignedInOtherDecks
+        self.missingCount = missingCount
+    }
 
     var isComplete: Bool { ownedInCollection >= quantity }
 }

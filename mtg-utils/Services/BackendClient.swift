@@ -115,7 +115,90 @@ final class BackendClient {
         return try JSONDecoder().decode(ScryfallCard.self, from: data)
     }
 
+    /// `GET /api/scryfall/card` — Spanish-localized full card details (oracle text,
+    /// legalities, prices, faces, set/rarity). Backed by the backend's Scryfall proxy.
+    func cardDetails(id: String? = nil, name: String? = nil) async throws -> SpanishCardDetails? {
+        var components = URLComponents(url: baseURL.appendingPathComponent("api/scryfall/card"), resolvingAgainstBaseURL: false)!
+        var items: [URLQueryItem] = []
+        if let id, !id.isEmpty {
+            items.append(URLQueryItem(name: "id", value: id))
+        }
+        if let name, !name.isEmpty {
+            items.append(URLQueryItem(name: "name", value: name))
+        }
+        components.queryItems = items.isEmpty ? nil : items
+        guard components.queryItems != nil else { return nil }
+
+        let (data, response) = try await session.data(from: components.url!)
+        guard let http = response as? HTTPURLResponse, http.statusCode < 400, !data.isEmpty else { return nil }
+        return try JSONDecoder().decode(SpanishCardDetails.self, from: data)
+    }
+
     // MARK: - Auth endpoints
+
+    // MARK: - Pricing endpoints
+
+    /// `POST /api/pricing/cards`. The provider is sent on every request;
+    /// Cardmarket is the default used by both clients and the backend.
+    func cardPriceSummary(
+        cards: [PricingCardInput],
+        provider: PriceProvider = .cardmarket,
+        forceRefresh: Bool = false,
+        userId: String? = nil,
+        accessToken: String? = nil
+    ) async throws -> PriceSummary {
+        try await pricingRequest(
+            path: "api/pricing/cards",
+            body: CardsPricingRequest(cards: cards, provider: provider.rawValue, forceRefresh: forceRefresh),
+            userId: userId,
+            accessToken: accessToken
+        )
+    }
+
+    /// `POST /api/pricing/decks/{deckId}`. Prices the complete card set in a deck.
+    func deckPriceSummary(
+        deckId: String,
+        provider: PriceProvider = .cardmarket,
+        forceRefresh: Bool = false,
+        userId: String? = nil,
+        accessToken: String? = nil
+    ) async throws -> PriceSummary {
+        try await pricingRequest(
+            path: "api/pricing/decks/\(deckId)?provider=\(provider.rawValue)&forceRefresh=\(forceRefresh)",
+            body: EmptyRequest(),
+            userId: userId,
+            accessToken: accessToken
+        )
+    }
+
+    private struct EmptyRequest: Encodable {}
+    private struct CardsPricingRequest: Encodable {
+        let cards: [PricingCardInput]
+        let provider: String
+        let forceRefresh: Bool
+    }
+
+    private func pricingRequest<T: Encodable>(
+        path: String,
+        body: T,
+        userId: String?,
+        accessToken: String?
+    ) async throws -> PriceSummary {
+        guard let requestURL = URL(string: "\(baseURL.absoluteString)/\(path)") else {
+            throw BackendClientError.invalidResponse
+        }
+        var request = URLRequest(url: requestURL)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        if let userId, !userId.isEmpty { request.setValue(userId, forHTTPHeaderField: "X-User-Id") }
+        if let accessToken, !accessToken.isEmpty { request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization") }
+        request.httpBody = try JSONEncoder().encode(body)
+        let (data, response) = try await session.data(for: request)
+        guard let http = response as? HTTPURLResponse else { throw BackendClientError.invalidResponse }
+        guard (200..<300).contains(http.statusCode) else { throw BackendClientError.httpStatus(http.statusCode) }
+        return try BackendDataStore.decoder.decode(PriceSummary.self, from: data)
+    }
 
     /// `POST /api/auth/login` — validates credentials, returns an access token.
     func authLogin(email: String, password: String) async throws -> BackendAuthResponse {
@@ -168,5 +251,17 @@ final class BackendClient {
             return BackendAuthResponse(user: nil, accessToken: nil, refreshToken: nil, needsConfirmation: false, error: "El backend no devolvió una respuesta de autenticación.")
         }
         return try JSONDecoder().decode(BackendAuthResponse.self, from: data)
+    }
+}
+
+enum BackendClientError: LocalizedError {
+    case invalidResponse
+    case httpStatus(Int)
+
+    var errorDescription: String? {
+        switch self {
+        case .invalidResponse: return "El backend devolvió una respuesta inválida."
+        case .httpStatus(let status): return "El backend respondió con HTTP \(status)."
+        }
     }
 }

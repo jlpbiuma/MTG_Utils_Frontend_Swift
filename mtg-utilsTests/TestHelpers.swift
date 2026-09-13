@@ -42,9 +42,9 @@ struct TestGroupableCard: GroupableCard {
         cardName: String,
         cardScryfallId: String,
         typeLine: String? = nil,
-        quantity: Int,
-        ownedInCollection: Int,
-        missingCount: Int
+        quantity: Int = 1,
+        ownedInCollection: Int = 1,
+        missingCount: Int = 0
     ) {
         self.cardName = cardName
         self.cardScryfallId = cardScryfallId

@@ -70,6 +70,19 @@ final class PricingViewModel {
         )
     }
 
+    func loadFromBackend(for deck: DeckDetail, store: BackendDataStore, provider: PriceProvider) async {
+        isLoading = true
+        errorMessage = nil
+        defer { isLoading = false }
+        do {
+            selectedProvider = provider
+            summary = try await store.priceSummary(forDeckId: deck.id, provider: provider)
+        } catch {
+            errorMessage = error.localizedDescription
+            summary = nil
+        }
+    }
+
     func selectProvider(_ provider: PriceProvider) async {
         guard provider != selectedProvider else { return }
         selectedProvider = provider
@@ -118,15 +131,6 @@ final class PricingViewModel {
 
     /// Deterministic pseudo-prices so the demo shows believable numbers.
     private func representativePrice(_ name: String, _ typeLine: String?) -> Double {
-        let hash = abs(name.unicodeScalars.reduce(1) { ($0 &* 31 &+ Int($1.value)) &* 7 })
-        let base = Double(hash % 45) / 10 + 0.20
-        if name.localizedCaseInsensitiveContains("Snapcaster") { return 29.99 }
-        if name.localizedCaseInsensitiveContains("Scalding Tarn") { return 24.50 }
-        if name.localizedCaseInsensitiveContains("Cyclonic Rift") { return 3.99 }
-        if name.localizedCaseInsensitiveContains("Chulane") { return 8.49 }
-        if name.localizedCaseInsensitiveContains("Birds of Paradise") { return 7.90 }
-        if let typeLine, typeLine.localizedCaseInsensitiveContains("Basic Land") { return 0.15 }
-        if let typeLine, typeLine.localizedCaseInsensitiveContains("Land") { return 1.20 }
-        return base
+        mtg_utils.representativePrice(name, typeLine)
     }
 }

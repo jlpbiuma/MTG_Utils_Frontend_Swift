@@ -6,16 +6,26 @@ struct DeckEditorView: View {
     @Environment(AppStore.self) private var appStore
     @Environment(\.dismiss) private var dismiss
 
+    let initialDeck: Deck?
     let onSave: (Deck) async throws -> Void
 
-    @State private var name = ""
-    @State private var format = "Commander"
-    @State private var description = ""
+    @State private var name: String
+    @State private var format: String
+    @State private var description: String
     @State private var commanderName: String?
     @State private var isSaving = false
     @State private var errorMessage: String?
 
     private let formats = ["Commander", "Modern", "Pioneer", "Standard", "Legacy", "Pauper", "Draft", "Otro"]
+
+    init(deck: Deck? = nil, onSave: @escaping (Deck) async throws -> Void) {
+        self.initialDeck = deck
+        self.onSave = onSave
+        _name = State(initialValue: deck?.name ?? "")
+        _format = State(initialValue: deck?.format ?? "Commander")
+        _description = State(initialValue: deck?.description ?? "")
+        _commanderName = State(initialValue: deck?.commander)
+    }
 
     var body: some View {
         NavigationStack {
@@ -47,6 +57,15 @@ struct DeckEditorView: View {
                                 .foregroundStyle(.mtgTextSecondary)
                         }
                     }
+
+                    if commanderName != nil {
+                        Button(role: .destructive) {
+                            commanderName = nil
+                        } label: {
+                            Label("Quitar comandante", systemImage: "xmark.circle")
+                                .font(.footnote)
+                        }
+                    }
                 }
 
                 if let errorMessage {
@@ -57,14 +76,14 @@ struct DeckEditorView: View {
                     }
                 }
             }
-            .navigationTitle("Nuevo mazo")
+            .navigationTitle(initialDeck != nil ? "Editar mazo" : "Nuevo mazo")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancelar") { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Crear") {
+                    Button(initialDeck != nil ? "Guardar" : "Crear") {
                         Task {
                             await save()
                         }
@@ -85,38 +104,64 @@ struct DeckEditorView: View {
         let trimmedName = name.trimmingCharacters(in: .whitespaces)
         guard !trimmedName.isEmpty else { return }
 
-        var cards: [DeckCard] = []
-        if let commanderName {
-            cards.append(
-                DeckCard(
-                    cardScryfallId: "pending:\(normalizeCardName(commanderName))",
-                    cardName: commanderName,
-                    quantity: 1,
-                    isCommander: true
-                )
+        var deck: Deck
+        if var existing = initialDeck {
+            existing.name = trimmedName
+            existing.format = format
+            existing.description = description.isEmpty ? nil : description
+            deck = existing
+        } else {
+            deck = Deck(
+                userId: appStore.userId,
+                name: trimmedName,
+                format: format,
+                description: description.isEmpty ? nil : description,
+                commander: nil,
+                cards: []
             )
         }
 
-        var deck = Deck(
-            userId: appStore.userId,
-            name: trimmedName,
-            format: format,
-            description: description.isEmpty ? nil : description,
-            commander: commanderName,
-            cards: cards
-        )
+        let trimmedCommander = commanderName?.trimmingCharacters(in: .whitespaces)
+        if let cmdName = trimmedCommander, !cmdName.isEmpty {
+            deck.commander = cmdName
 
-        if let commanderName {
-            // Resolve the commander image for the deck list artwork.
-            if let resolved = try? await appStore.catalog.resolveCards(named: [commanderName]).first {
+            // Clear previous isCommander flags
+            for i in deck.cards.indices {
+                deck.cards[i].isCommander = false
+            }
+
+            let normalizedCmd = normalizeCardName(cmdName)
+            if let existingIndex = deck.cards.firstIndex(where: { normalizeCardName($0.cardName) == normalizedCmd }) {
+                deck.cards[existingIndex].isCommander = true
+            } else {
+                deck.cards.append(
+                    DeckCard(
+                        cardScryfallId: "pending:\(normalizedCmd)",
+                        cardName: cmdName,
+                        quantity: 1,
+                        isCommander: true
+                    )
+                )
+            }
+
+            // Resolve the commander image for the deck list artwork
+            if let resolved = try? await appStore.catalog.resolveCards(named: [cmdName]).first {
                 deck.commanderScryfallId = resolved.scryfallId
                 deck.commanderImageUri = resolved.imageUri
-                if let idx = deck.cards.firstIndex(where: { $0.isCommander }) {
+                if let idx = deck.cards.firstIndex(where: { normalizeCardName($0.cardName) == normalizedCmd }) {
                     deck.cards[idx].cardScryfallId = resolved.scryfallId
                     deck.cards[idx].imageUri = resolved.imageUri
                     deck.cards[idx].manaCost = resolved.manaCost
                     deck.cards[idx].typeLine = resolved.typeLine
                 }
+            }
+        } else {
+            // Commander removed or absent
+            deck.commander = nil
+            deck.commanderScryfallId = nil
+            deck.commanderImageUri = nil
+            for i in deck.cards.indices {
+                deck.cards[i].isCommander = false
             }
         }
 
@@ -142,11 +187,11 @@ struct DeckImportView: View {
     @Environment(\.dismiss) private var dismiss
 
     let username: String
+    let onImport: (Deck) -> Void
 
     @State private var text = ""
     @State private var deckName = ""
     @State private var format = "Commander"
-    @State private var isImporting = false
     @State private var preview: ParsedDecklist?
     @State private var errorMessage: String?
 
@@ -191,11 +236,9 @@ struct DeckImportView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Importar") {
-                        Task {
-                            await importDeck()
-                        }
+                        importDeck()
                     }
-                    .disabled(text.trimmingCharacters(in: .whitespaces).isEmpty || isImporting)
+                    .disabled(text.trimmingCharacters(in: .whitespaces).isEmpty)
                 }
             }
             .onChange(of: text) {
@@ -206,12 +249,8 @@ struct DeckImportView: View {
         .tint(.mtgAmber)
     }
 
-    @MainActor
-    private func importDeck() async {
-        isImporting = true
+    private func importDeck() {
         errorMessage = nil
-        defer { isImporting = false }
-
         do {
             let parsed = try parseDecklistText(text)
             guard !parsed.mainboard.isEmpty else {
@@ -219,44 +258,38 @@ struct DeckImportView: View {
                 return
             }
 
-            let names = (parsed.mainboard + parsed.sideboard).map(\.name)
-            let resolved = try await appStore.catalog.resolveCards(named: names)
-            let resolvedByName = Dictionary(resolved.map { (normalizeCardName($0.name), $0) }, uniquingKeysWith: { first, _ in first })
-
             var cards: [DeckCard] = []
             var commanderName: String?
 
             for entry in parsed.mainboard {
-                let meta = resolvedByName[normalizeCardName(entry.name)]
                 let isCommander = format == "Commander" && isLikelyCommander(entry.name)
                 if isCommander && commanderName == nil {
-                    commanderName = meta?.name ?? entry.name
+                    commanderName = entry.name
                 }
                 cards.append(
                     DeckCard(
-                        cardScryfallId: meta?.scryfallId ?? "pending:\(normalizeCardName(entry.name))",
-                        cardName: meta?.name ?? entry.name,
+                        cardScryfallId: "pending:\(normalizeCardName(entry.name))",
+                        cardName: entry.name,
                         quantity: entry.quantity,
                         isSideboard: false,
                         isCommander: isCommander,
-                        manaCost: meta?.manaCost,
-                        typeLine: meta?.typeLine,
-                        imageUri: meta?.imageUri
+                        manaCost: nil,
+                        typeLine: nil,
+                        imageUri: nil
                     )
                 )
             }
             for entry in parsed.sideboard {
-                let meta = resolvedByName[normalizeCardName(entry.name)]
                 cards.append(
                     DeckCard(
-                        cardScryfallId: meta?.scryfallId ?? "pending:\(normalizeCardName(entry.name))",
-                        cardName: meta?.name ?? entry.name,
+                        cardScryfallId: "pending:\(normalizeCardName(entry.name))",
+                        cardName: entry.name,
                         quantity: entry.quantity,
                         isSideboard: true,
                         isCommander: false,
-                        manaCost: meta?.manaCost,
-                        typeLine: meta?.typeLine,
-                        imageUri: meta?.imageUri
+                        manaCost: nil,
+                        typeLine: nil,
+                        imageUri: nil
                     )
                 )
             }
@@ -270,15 +303,36 @@ struct DeckImportView: View {
                 name: name,
                 format: format,
                 commander: commanderName,
-                commanderScryfallId: commanderName.flatMap { resolvedByName[normalizeCardName($0)]?.scryfallId },
-                commanderImageUri: commanderName.flatMap { resolvedByName[normalizeCardName($0)]?.imageUri },
+                commanderScryfallId: nil,
+                commanderImageUri: nil,
                 cards: cards
             )
-
-            var allDecks = try await appStore.store.allDecks()
-            allDecks.append(deck)
-            try await appStore.store.saveDecks(allDecks)
+            onImport(deck)
             dismiss()
+
+            // Enrich pending cards in the background; the local deck is already visible.
+            Task {
+                guard let resolved = try? await appStore.catalog.resolveCards(named: cards.map(\.cardName)) else { return }
+                let byName = Dictionary(resolved.map { (normalizeCardName($0.name), $0) }, uniquingKeysWith: { first, _ in first })
+                var enriched = deck
+                enriched.cards = deck.cards.map { card in
+                    guard let meta = byName[normalizeCardName(card.cardName)] else { return card }
+                    var updated = card
+                    updated.cardScryfallId = meta.scryfallId
+                    updated.cardName = meta.name
+                    updated.manaCost = meta.manaCost
+                    updated.typeLine = meta.typeLine
+                    updated.imageUri = meta.imageUri
+                    return updated
+                }
+                if let commander = enriched.commander,
+                   let meta = byName[normalizeCardName(commander)] {
+                    enriched.commander = meta.name
+                    enriched.commanderScryfallId = meta.scryfallId
+                    enriched.commanderImageUri = meta.imageUri
+                }
+                onImport(enriched)
+            }
         } catch let error as ImportError {
             errorMessage = error.localizedDescription
         } catch {

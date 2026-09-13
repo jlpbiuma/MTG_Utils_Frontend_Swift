@@ -15,7 +15,7 @@ struct mtg_utilsApp: App {
         WindowGroup {
             RootView()
                 .environment(appStore)
-                .preferredColorScheme(.dark)
+                .preferredColorScheme(appStore.settings.theme.colorScheme)
                 .tint(.mtgAmber)
         }
     }
@@ -27,10 +27,44 @@ struct RootView: View {
     @Environment(AppStore.self) private var appStore
 
     var body: some View {
-        if appStore.session.active {
-            ContentView()
-        } else {
-            LoginView()
+        Group {
+            if !appStore.isLaunchReady {
+                LaunchView()
+            } else if appStore.session.active {
+                ContentView()
+            } else {
+                LoginView()
+            }
         }
+        .task {
+            await appStore.finishLaunching()
+        }
+    }
+}
+
+private struct LaunchView: View {
+    var body: some View {
+        ZStack {
+            Color.mtgBackground
+                .ignoresSafeArea()
+
+            VStack(spacing: 20) {
+                Image("LaunchIcon")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 164, height: 164)
+                    .accessibilityHidden(true)
+
+                Text("MTG Utils")
+                    .font(.title2.weight(.semibold))
+                    .foregroundStyle(.mtgText)
+
+                ProgressView()
+                    .tint(.mtgAmber)
+                    .padding(.top, 4)
+            }
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("MTG Utils se está iniciando")
     }
 }

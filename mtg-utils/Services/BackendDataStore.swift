@@ -43,6 +43,7 @@ struct BackendDeckCard: Decodable {
     let manaCost: String?
     let typeLine: String?
     let imageUri: String?
+    let setCode: String?
     let ownedInCollection: Int
     let availableToAssign: Int
     let assignedInOtherDecks: [BackendOtherDeckAssignment]
@@ -111,6 +112,7 @@ private struct BackendDeckCardRequest: Encodable {
     let manaCost: String?
     let typeLine: String?
     let imageUri: String?
+    let setCode: String?
 
     init(from card: DeckCard) {
         cardScryfallId = card.cardScryfallId
@@ -121,6 +123,7 @@ private struct BackendDeckCardRequest: Encodable {
         manaCost = card.manaCost
         typeLine = card.typeLine
         imageUri = card.imageUri
+        setCode = card.setCode
     }
 }
 
@@ -148,6 +151,11 @@ private struct BackendCollectionCardRequest: Encodable {
 
 private struct BackendQuantityRequest: Encodable {
     let quantity: Int
+}
+
+private struct BackendCardUpdateRequest: Encodable {
+    let quantity: Int
+    let setCode: String?
 }
 
 private struct BackendStatusResponse: Decodable {
@@ -178,6 +186,9 @@ final class BackendDataStore: AppDataStoring {
     private let client: BackendClient
     private let session: URLSession
     private var deckIDMap: [String: String] = [:]
+    private var decksCache: (value: [Deck], date: Date)?
+    private var collectionCache: (value: [CollectionCard], date: Date)?
+    private let cacheLifetime: TimeInterval = 5
 
     /// User scope for `X-User-Id`; assigned when the user signs in.
     var userId: String
@@ -195,6 +206,26 @@ final class BackendDataStore: AppDataStoring {
         self.userId = userId
     }
 
+    /// Reads prices from the FastAPI pricing contract instead of calculating
+    /// client-side estimates. The provider is always sent explicitly.
+    func priceSummary(forDeckId deckId: String, provider: PriceProvider = .cardmarket, forceRefresh: Bool = false) async throws -> PriceSummary {
+        try await sendJSON(
+            PriceSummary.self,
+            method: "POST",
+            path: "api/pricing/decks/\(deckId)?provider=\(provider.rawValue)&forceRefresh=\(forceRefresh)",
+            body: EmptyPricingRequest()
+        )
+    }
+
+    func priceSummary(forCards cards: [PricingCardInput], provider: PriceProvider = .cardmarket, forceRefresh: Bool = false) async throws -> PriceSummary {
+        try await sendJSON(
+            PriceSummary.self,
+            method: "POST",
+            path: "api/pricing/cards",
+            body: CardsPricingRequest(cards: cards, provider: provider.rawValue, forceRefresh: forceRefresh)
+        )
+    }
+
     static func makeDefaultSession() -> URLSession {
         let config = URLSessionConfiguration.default
         config.timeoutIntervalForRequest = 20
@@ -204,6 +235,9 @@ final class BackendDataStore: AppDataStoring {
     // MARK: AppDataStoring
 
     func allDecks() async throws -> [Deck] {
+        if let cache = decksCache, Date().timeIntervalSince(cache.date) < cacheLifetime {
+            return cache.value
+        }
         let summaries = try await self.getJSON([BackendDeckSummary].self, at: "api/decks")
         var decks: [Deck] = []
         for summary in summaries {
@@ -211,7 +245,28 @@ final class BackendDataStore: AppDataStoring {
                 decks.append(Self.deck(from: detail))
             }
         }
+        decksCache = (decks, Date())
         return decks
+    }
+
+    func allDeckSummaries() async throws -> [DeckSummary] {
+        if let cache = decksCache, Date().timeIntervalSince(cache.date) < cacheLifetime {
+            return cache.value.map { deck in
+                DeckSummary(id: deck.id, userId: deck.userId, name: deck.name, format: deck.format, commander: deck.commander,
+                            totalCards: deck.cards.filter { !$0.isCommander }.reduce(0) { $0 + $1.quantity },
+                            uniqueCards: deck.cards.filter { !$0.isCommander }.count,
+                            estimatedPrice: estimateDeckPrice(cards: deck.cards), colors: extractDeckColors(cards: deck.cards))
+            }
+        }
+        let summaries = try await self.getJSON([BackendDeckSummary].self, at: "api/decks")
+        return summaries.map(Self.deckSummary(from:))
+    }
+
+    func deckDetail(id: String) async throws -> DeckDetail? {
+        guard let detail = try? await self.getJSON(BackendDeckDetail.self, at: "api/decks/\(id)") else {
+            return nil
+        }
+        return Self.deckDetail(from: detail)
     }
 
     func saveDecks(_ decks: [Deck]) async throws {
@@ -229,11 +284,17 @@ final class BackendDataStore: AppDataStoring {
             _ = try await sendStatus(method: "DELETE", path: "api/decks/\(orphan.id)")
             deckIDMap[orphan.id] = nil
         }
+        decksCache = (decks, Date())
     }
 
     func allCollection() async throws -> [CollectionCard] {
+        if let cache = collectionCache, Date().timeIntervalSince(cache.date) < cacheLifetime {
+            return cache.value
+        }
         let cards = try await self.getJSON([BackendCollectionCard].self, at: "api/collection")
-        return cards.map(Self.collectionCard(from:))
+        let result = cards.map(Self.collectionCard(from:))
+        collectionCache = (result, Date())
+        return result
     }
 
     func saveCollection(_ cards: [CollectionCard]) async throws {
@@ -245,11 +306,11 @@ final class BackendDataStore: AppDataStoring {
                 keep.insert(existing.id)
                 if card.quantity <= 0 {
                     _ = try await sendStatus(method: "DELETE", path: "api/collection/\(existing.id)")
-                } else if existing.quantity != card.quantity {
+                } else if existing.quantity != card.quantity || existing.setCode != card.setCode {
                     _ = try await sendStatus(
                         method: "PATCH",
                         path: "api/collection/\(existing.id)",
-                        body: BackendQuantityRequest(quantity: card.quantity)
+                        body: BackendCardUpdateRequest(quantity: card.quantity, setCode: card.setCode)
                     )
                 }
             } else {
@@ -262,6 +323,7 @@ final class BackendDataStore: AppDataStoring {
                 keep.insert(created.id)
             }
         }
+        collectionCache = (cards, Date())
 
         for card in server where !keep.contains(card.id) {
             _ = try await sendStatus(method: "DELETE", path: "api/collection/\(card.id)")
@@ -308,13 +370,19 @@ final class BackendDataStore: AppDataStoring {
         var changed = false
         if deck.name != server.name { payload.name = deck.name; changed = true }
         if deck.format != server.format { payload.format = deck.format; changed = true }
-        if deck.description != server.description { payload.description = deck.description; changed = true }
-        if deck.commander != server.commander { payload.commander = deck.commander; changed = true }
-        if deck.commanderScryfallId != server.commanderScryfallId {
-            payload.commanderScryfallId = deck.commanderScryfallId; changed = true
-        }
-        if deck.commanderImageUri != server.commanderImageUri {
-            payload.commanderImageUri = deck.commanderImageUri; changed = true
+        if deck.description != server.description { payload.description = deck.description ?? ""; changed = true }
+        if deck.commander != server.commander {
+            payload.commander = deck.commander ?? ""
+            payload.commanderScryfallId = deck.commanderScryfallId ?? ""
+            payload.commanderImageUri = deck.commanderImageUri ?? ""
+            changed = true
+        } else {
+            if deck.commanderScryfallId != server.commanderScryfallId {
+                payload.commanderScryfallId = deck.commanderScryfallId ?? ""; changed = true
+            }
+            if deck.commanderImageUri != server.commanderImageUri {
+                payload.commanderImageUri = deck.commanderImageUri ?? ""; changed = true
+            }
         }
         if changed {
             _ = try await sendStatus(method: "PUT", path: "api/decks/\(server.id)", body: payload)
@@ -335,11 +403,11 @@ final class BackendDataStore: AppDataStoring {
                 $0.cardScryfallId == local.cardScryfallId && $0.isSideboard == local.isSideboard
             }) {
                 keepIDs.insert(existing.id)
-                if existing.quantity != local.quantity {
+                if existing.quantity != local.quantity || existing.setCode != local.setCode {
                     _ = try await sendStatus(
                         method: "PATCH",
                         path: "api/decks/cards/\(existing.id)",
-                        body: BackendQuantityRequest(quantity: local.quantity)
+                        body: BackendCardUpdateRequest(quantity: local.quantity, setCode: local.setCode)
                     )
                 }
             } else {
@@ -359,6 +427,68 @@ final class BackendDataStore: AppDataStoring {
     }
 
     // MARK: Mapping
+
+    private static func deckSummary(from s: BackendDeckSummary) -> DeckSummary {
+        DeckSummary(
+            id: s.id,
+            userId: s.userId,
+            name: s.name,
+            format: s.format,
+            description: s.description,
+            commander: s.commander,
+            commanderScryfallId: s.commanderScryfallId,
+            commanderImageUri: s.commanderImageUri,
+            createdAt: s.createdAt,
+            updatedAt: s.updatedAt,
+            totalCards: s.totalCards,
+            uniqueCards: s.uniqueCards,
+            ownedCards: s.ownedCards,
+            missingCardsCount: s.missingCards,
+            completionPercentage: s.completionPercentage
+        )
+    }
+
+    private static func deckDetail(from detail: BackendDeckDetail) -> DeckDetail {
+        DeckDetail(
+            id: detail.id,
+            userId: detail.userId,
+            name: detail.name,
+            format: detail.format,
+            description: detail.description,
+            commander: detail.commander,
+            commanderScryfallId: detail.commanderScryfallId,
+            commanderImageUri: detail.commanderImageUri,
+            createdAt: detail.createdAt,
+            updatedAt: detail.updatedAt,
+            totalCards: detail.totalCards,
+            uniqueCards: detail.uniqueCards,
+            ownedCards: detail.ownedCards,
+            missingCardsCount: detail.missingCards,
+            completionPercentage: detail.completionPercentage,
+            cards: detail.cards.map { card in
+                DeckCardWithOwnership(
+                    id: card.id,
+                    deckId: card.deckId,
+                    cardScryfallId: card.cardScryfallId,
+                    cardName: card.cardName,
+                    quantity: card.quantity,
+                    assignedQuantity: card.assignedQuantity,
+                    isSideboard: card.isSideboard,
+                    isCommander: card.isCommander,
+                    manaCost: card.manaCost,
+                    typeLine: card.typeLine,
+                    imageUri: card.imageUri,
+                    setCode: card.setCode,
+                    ownedInCollection: card.ownedInCollection,
+                    availableToAssign: card.availableToAssign,
+                    assignedInOtherDecks: card.assignedInOtherDecks.map {
+                        OtherDeckAssignment(deckId: $0.deckId, deckName: $0.deckName, quantity: $0.quantity)
+                    },
+                    missingCount: card.missingCount
+                )
+            }
+        )
+    }
 
     private static func deck(from detail: BackendDeckDetail) -> Deck {
         Deck(
@@ -384,7 +514,8 @@ final class BackendDataStore: AppDataStoring {
                     isCommander: card.isCommander,
                     manaCost: card.manaCost,
                     typeLine: card.typeLine,
-                    imageUri: card.imageUri
+                    imageUri: card.imageUri,
+                    setCode: card.setCode
                 )
             }
         )
@@ -407,8 +538,17 @@ final class BackendDataStore: AppDataStoring {
 
     // MARK: HTTP plumbing
 
+    private struct EmptyPricingRequest: Encodable {}
+    private struct CardsPricingRequest: Encodable {
+        let cards: [PricingCardInput]
+        let provider: String
+        let forceRefresh: Bool
+    }
+
     private func url(_ path: String) -> URL {
-        client.baseURL.appendingPathComponent(path)
+        // Preserve query strings (pricing deck endpoint uses provider and
+        // forceRefresh) instead of percent-encoding them as path components.
+        URL(string: "\(client.baseURL.absoluteString)/\(path)")!
     }
 
     private func makeRequest(method: String, path: String) -> URLRequest {

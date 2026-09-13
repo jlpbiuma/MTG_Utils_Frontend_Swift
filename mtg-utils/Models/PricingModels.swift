@@ -3,7 +3,7 @@ import Foundation
 // MARK: - Pricing cache policy
 
 /// Pricing quotes are considered fresh for exactly 3 days (259,200,000 ms),
-/// matching the web app's `CACHE_TTL_MS`. Applied by the pricing worker in Phase 3.
+/// matching the web app's `CACHE_TTL_MS`. Refreshed by the unified worker.
 enum PricingCache {
     static let ttlMilliseconds: Double = 3 * 24 * 60 * 60 * 1000
 
@@ -94,8 +94,24 @@ struct PriceSummary: Codable, Hashable {
     var totalOwnedValue: Double?
     var totalMissingValue: Double?
     var quotes: [String: CardPriceQuote]
+    var lastUpdated: Date? = nil
 
     func quote(forCardScryfallId scryfallId: String, normalizedName: String) -> CardPriceQuote? {
         quotes[scryfallId] ?? quotes[normalizedName]
+    }
+}
+
+/// Card payload accepted by `POST /api/pricing/cards`.
+struct PricingCardInput: Codable, Hashable {
+    let name: String
+    let scryfallId: String?
+    let quantity: Int
+    let isMissing: Bool
+
+    init(name: String, scryfallId: String? = nil, quantity: Int = 1, isMissing: Bool = false) {
+        self.name = name
+        self.scryfallId = scryfallId
+        self.quantity = quantity
+        self.isMissing = isMissing
     }
 }

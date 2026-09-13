@@ -180,4 +180,96 @@ struct CardTypeGroupingTests {
         #expect(sections[0].totalCards == 11)
         #expect(sections[0].uniqueCards == 2)
     }
+
+    @Test func ordersAllCategoriesAccordingToSpec() {
+        let cards: [TestGroupableCard] = [
+            TestGroupableCard(cardName: "Plains", cardScryfallId: "1", typeLine: "Basic Land — Plains"),
+            TestGroupableCard(cardName: "Invasion of Gobakhan", cardScryfallId: "2", typeLine: "Battle — Siege"),
+            TestGroupableCard(cardName: "Sol Ring", cardScryfallId: "3", typeLine: "Artifact"),
+            TestGroupableCard(cardName: "Rhystic Study", cardScryfallId: "4", typeLine: "Enchantment"),
+            TestGroupableCard(cardName: "Wrath of God", cardScryfallId: "5", typeLine: "Sorcery"),
+            TestGroupableCard(cardName: "Brainstorm", cardScryfallId: "6", typeLine: "Instant"),
+            TestGroupableCard(cardName: "Llanowar Elves", cardScryfallId: "7", typeLine: "Creature — Elf"),
+            TestGroupableCard(cardName: "Jace, the Mind Sculptor", cardScryfallId: "8", typeLine: "Legendary Planeswalker — Jace"),
+        ]
+
+        let sections = groupCardsByType(cards)
+        let keys = sections.map(\.key)
+        #expect(keys == [
+            .planeswalkers,
+            .creatures,
+            .instants,
+            .sorceries,
+            .enchantments,
+            .artifacts,
+            .battles,
+            .lands
+        ])
+    }
+
+    @Test func preservesCmcAscendingOrderWithinGroups() {
+        let creatureCards = [
+            DeckCardWithOwnership(
+                id: "1",
+                deckId: "d1",
+                cardScryfallId: "c1",
+                cardName: "Colossal Dreadmaw",
+                quantity: 1,
+                assignedQuantity: 0,
+                isSideboard: false,
+                isCommander: false,
+                manaCost: "{4}{G}{G}",
+                typeLine: "Creature — Dinosaur",
+                imageUri: nil,
+                setCode: "M21",
+                ownedInCollection: 1,
+                availableToAssign: 1,
+                assignedInOtherDecks: [],
+                missingCount: 0
+            ),
+            DeckCardWithOwnership(
+                id: "2",
+                deckId: "d1",
+                cardScryfallId: "c2",
+                cardName: "Llanowar Elves",
+                quantity: 1,
+                assignedQuantity: 0,
+                isSideboard: false,
+                isCommander: false,
+                manaCost: "{G}",
+                typeLine: "Creature — Elf Druid",
+                imageUri: nil,
+                setCode: "DOM",
+                ownedInCollection: 1,
+                availableToAssign: 1,
+                assignedInOtherDecks: [],
+                missingCount: 0
+            ),
+            DeckCardWithOwnership(
+                id: "3",
+                deckId: "d1",
+                cardScryfallId: "c3",
+                cardName: "Dryad Arbor",
+                quantity: 1,
+                assignedQuantity: 0,
+                isSideboard: false,
+                isCommander: false,
+                manaCost: "",
+                typeLine: "Land Creature — Forest Dryad",
+                imageUri: nil,
+                setCode: "FUT",
+                ownedInCollection: 1,
+                availableToAssign: 1,
+                assignedInOtherDecks: [],
+                missingCount: 0
+            ),
+        ]
+
+        // When sorted by CMC ascending (0, 1, 6)
+        let sorted = sortCards(creatureCards, by: .cmc, direction: .ascending)
+        let sections = groupCardsByType(sorted)
+        #expect(sections.count == 1)
+        #expect(sections[0].key == .creatures)
+        #expect(sections[0].cards.map(\.cardName) == ["Dryad Arbor", "Llanowar Elves", "Colossal Dreadmaw"])
+    }
 }

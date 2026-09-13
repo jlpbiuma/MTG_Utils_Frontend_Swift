@@ -142,6 +142,60 @@ extension Comparable {
     }
 }
 
+enum DeckSortField: String, CaseIterable, Hashable, Identifiable {
+    case completion
+    case price
+    case name
+    case date
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .completion: return "Completitud"
+        case .price: return "Precio"
+        case .name: return "Nombre"
+        case .date: return "Fecha"
+        }
+    }
+}
+
+/// Extracts distinct MTG colors from a mana-cost string in W, U, B, R, G order.
+func extractColors(from manaCost: String?) -> [String] {
+    guard let manaCost, !manaCost.isEmpty else { return [] }
+    let symbols = parseManaCostSymbols(manaCost)
+    var set = Set<String>()
+    for sym in symbols {
+        let u = sym.uppercased()
+        if u.contains("W") { set.insert("W") }
+        if u.contains("U") { set.insert("U") }
+        if u.contains("B") { set.insert("B") }
+        if u.contains("R") { set.insert("R") }
+        if u.contains("G") { set.insert("G") }
+    }
+    let order = ["W", "U", "B", "R", "G"]
+    return order.filter { set.contains($0) }
+}
+
+/// Deduces color identity of a deck from its cards.
+func extractDeckColors(cards: [DeckCard]) -> [String] {
+    var set = Set<String>()
+    for card in cards {
+        let cardColors = extractColors(from: card.manaCost)
+        set.formUnion(cardColors)
+    }
+    let order = ["W", "U", "B", "R", "G"]
+    return order.filter { set.contains($0) }
+}
+
+/// Estimates total deck price from its cards using deterministic representative pricing.
+func estimateDeckPrice(cards: [DeckCard]) -> Double {
+    let total = cards.reduce(0.0) { sum, card in
+        sum + (representativePrice(card.cardName, card.typeLine) * Double(card.quantity))
+    }
+    return total.rounded2()
+}
+
 private func colorsKey(_ colors: [String]) -> String {
     colors.sorted().joined(separator: ",")
 }
@@ -157,11 +211,13 @@ extension SortableCard {
 extension DeckCardWithOwnership: SortableCard {
     var name: String { cardName }
     var cmc: Double? { nil }
-    var price: Double { 0 }
+    var price: Double { representativePrice(cardName, typeLine) }
+    var colors: [String] { extractColors(from: manaCost) }
 }
 
 extension CollectionCard: SortableCard {
     var name: String { cardName }
     var cmc: Double? { nil }
-    var price: Double { 0 }
+    var price: Double { representativePrice(cardName, typeLine) }
+    var colors: [String] { extractColors(from: manaCost) }
 }

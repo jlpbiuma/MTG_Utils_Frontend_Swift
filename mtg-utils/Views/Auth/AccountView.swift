@@ -19,7 +19,9 @@ struct AccountView: View {
 
     @MainActor
     private func profile(_ user: AuthUser) -> some View {
-        Form {
+        @Bindable var settings = appStore.settings
+
+        return Form {
             Section {
                 HStack(spacing: 14) {
                     Circle()
@@ -49,6 +51,26 @@ struct AccountView: View {
                 }
                 LabeledContent("ID de usuario", value: user.id)
                 Text("Mazos, colección y completitud se sincronizan con el backend a través de tu sesión autenticada.")
+                    .font(.footnote)
+                    .foregroundStyle(.mtgTextSecondary)
+            }
+
+            Section("Ajustes de la aplicación") {
+                Picker("Tema", selection: $settings.theme) {
+                    ForEach(AppSettings.Theme.allCases) { theme in
+                        Text(theme.displayName).tag(theme)
+                    }
+                }
+                .pickerStyle(.menu)
+
+                Picker("Proveedor de precios", selection: $settings.priceProvider) {
+                    ForEach(PriceProvider.allCases) { provider in
+                        Text(provider.displayName).tag(provider)
+                    }
+                }
+                .pickerStyle(.menu)
+
+                Text(settings.priceProvider.description)
                     .font(.footnote)
                     .foregroundStyle(.mtgTextSecondary)
             }

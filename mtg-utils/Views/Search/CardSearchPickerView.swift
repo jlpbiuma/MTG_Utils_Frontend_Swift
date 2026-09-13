@@ -45,7 +45,7 @@ struct CardSearchPickerView: View {
                             dismiss()
                         } label: {
                             HStack {
-                                CardImageView(url: card.displayImageUrl, placeholderText: nil)
+                                CardImageView(url: card.displayImageSmallUrl, placeholderText: nil, targetSize: 96)
                                     .frame(width: 34, height: 48)
                                     .clipShape(RoundedRectangle(cornerRadius: 3))
                                 VStack(alignment: .leading, spacing: 2) {

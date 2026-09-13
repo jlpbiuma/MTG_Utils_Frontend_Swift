@@ -11,9 +11,11 @@ final class AppStore {
     let client: BackendClient
     let catalog: ScryfallClient
     let store: BackendDataStore
+    let settings: AppSettings
 
     private(set) var session: AuthSession
     private(set) var isAuthenticating = false
+    private(set) var isLaunchReady = false
     var authError: String?
 
     private(set) var accessToken: String?
@@ -28,6 +30,7 @@ final class AppStore {
         self.catalog = catalog
         self.session = AuthSession(active: false, user: nil, mode: .demo)
         self.store = BackendDataStore(client: client)
+        self.settings = AppSettings()
         restoreSavedSession()
     }
 
@@ -139,6 +142,13 @@ final class AppStore {
         _ = apply(response: response, mode: session.mode)
     }
 
+    /// Finishes the launch work before exposing the first interactive screen.
+    func finishLaunching() async {
+        guard !isLaunchReady else { return }
+        await refreshSessionIfNeeded()
+        isLaunchReady = true
+    }
+
     // MARK: - Helpers
 
     /// `true` if the response established a session; `false` if an error was surfaced.
@@ -221,5 +231,6 @@ private struct SavedSession: Codable {
 enum AppTab: Hashable {
     case decks
     case collection
+    case scanner
     case account
 }
