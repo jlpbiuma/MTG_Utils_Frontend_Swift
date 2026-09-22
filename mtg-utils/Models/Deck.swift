@@ -155,9 +155,29 @@ struct DeckSummary: Identifiable, Hashable {
     }
 }
 
+// MARK: - Deck Requirements & Shared Badges
+
+public struct DeckRequirement: Codable, Identifiable, Hashable {
+    public let deckId: String
+    public let deckName: String
+    public let quantity: Int
+    public let completionPercentage: Double
+    public let colors: [String]
+
+    public var id: String { deckId }
+
+    public init(deckId: String, deckName: String, quantity: Int, completionPercentage: Double = 0.0, colors: [String] = []) {
+        self.deckId = deckId
+        self.deckName = deckName
+        self.quantity = quantity
+        self.completionPercentage = completionPercentage
+        self.colors = colors
+    }
+}
+
 // MARK: - Ownership & assignment helpers
 
-struct OtherDeckAssignment: Identifiable, Hashable {
+struct OtherDeckAssignment: Codable, Identifiable, Hashable {
     var deckId: String
     var deckName: String
     var quantity: Int

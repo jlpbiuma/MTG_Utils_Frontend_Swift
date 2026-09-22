@@ -1,12 +1,21 @@
 import SwiftUI
 
-// MARK: - Deck detail
+enum DeckSubView: String, CaseIterable, Identifiable {
+    case cards = "Cartas"
+    case editor = "Editor"
+    case analytics = "Analíticas"
+    case mulligan = "Mulligan"
+    case overlap = "Solapamiento"
+
+    var id: String { rawValue }
+}
 
 struct DeckDetailView: View {
     @Environment(AppStore.self) private var appStore
     let deckSummary: DeckSummary
 
     @State private var viewModel: DeckDetailViewModel?
+    @State private var selectedSubView: DeckSubView = .cards
     @State private var showingEdhrec = false
     @State private var showingPricing = false
     @State private var showingEdit = false
@@ -16,6 +25,9 @@ struct DeckDetailView: View {
     @State private var cardEditingEdition: DeckCardWithOwnership?
     @State private var cardEditingQuantity: DeckCardWithOwnership?
     @State private var cardToDelete: DeckCardWithOwnership?
+    @State private var isAddingMissingToCollection = false
+    @State private var isAddingMissingToWants = false
+    @State private var bannerFeedback: String?
 
     var body: some View {
         Group {
@@ -60,14 +72,13 @@ struct DeckDetailView: View {
             }
         }
         .task {
-            if let deck = try? await appStore.store.allDecks().first(where: { $0.id == deckSummary.id }) {
-                let vm = DeckDetailViewModel(deck: deck, store: appStore.store, catalog: appStore.catalog, priceProvider: appStore.settings.priceProvider)
-                viewModel = vm
-                await vm.load()
-            } else {
-                let vm = DeckDetailViewModel(deck: Deck(id: deckSummary.id, name: deckSummary.name), store: appStore.store, catalog: appStore.catalog, priceProvider: appStore.settings.priceProvider)
-                viewModel = vm
-            }
+            let vm = viewModel ?? DeckDetailViewModel(
+                deck: Deck(id: deckSummary.id, name: deckSummary.name),
+                store: appStore.store, catalog: appStore.catalog,
+                priceProvider: appStore.settings.priceProvider
+            )
+            viewModel = vm
+            await vm.load()
         }
         .sheet(isPresented: $showingEdhrec) {
             if let viewModel, let commander = viewModel.commander {
@@ -126,13 +137,7 @@ struct DeckDetailView: View {
         .sheet(isPresented: $showingEdit) {
             if let viewModel {
                 DeckEditorView(deck: viewModel.deck) { updatedDeck in
-                    var all = try await appStore.store.allDecks()
-                    if let index = all.firstIndex(where: { $0.id == updatedDeck.id }) {
-                        all[index] = updatedDeck
-                    } else {
-                        all.append(updatedDeck)
-                    }
-                    try await appStore.store.saveDecks(all)
+                    try await appStore.store.updateDeck(updatedDeck)
                     await viewModel.load()
                 }
             }
@@ -151,9 +156,44 @@ struct DeckDetailView: View {
 
     @MainActor
     private func content(_ vm: DeckDetailViewModel) -> some View {
+        VStack(spacing: 0) {
+            // Sub-view picker
+            Picker("Vista", selection: $selectedSubView) {
+                ForEach(DeckSubView.allCases) { subView in
+                    Text(subView.rawValue).tag(subView)
+                }
+            }
+            .pickerStyle(.menu)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal)
+            .padding(.top, 6)
+            .padding(.bottom, 4)
+            .background(Color.mtgSurface)
+
+            Group {
+                switch selectedSubView {
+                case .cards:
+                    cardsListView(vm)
+                case .editor:
+                    MoxfieldDeckEditorView(cards: vm.detail?.cards ?? []) { _ in
+                        await vm.load()
+                    }
+                case .analytics:
+                    DeckAnalyticsView(cards: vm.detail?.cards ?? [], colors: vm.commanderColorIdentity)
+                case .mulligan:
+                    DeckMulliganSimulatorView(cards: vm.detail?.cards ?? [], commanderName: vm.detail?.commander)
+                case .overlap:
+                    DeckOverlapView(cards: vm.detail?.cards ?? [], deckName: vm.detail?.name ?? "")
+                }
+            }
+        }
+    }
+
+    @MainActor
+    private func cardsListView(_ vm: DeckDetailViewModel) -> some View {
         @Bindable var vm = vm
 
-        return ZStack(alignment: .bottom) {
+        return VStack(spacing: 0) {
             List {
                 if let detail = vm.detail {
                     header(detail, vm: vm)
@@ -215,12 +255,6 @@ struct DeckDetailView: View {
                         }
                     }
 
-                    // Spacer at the bottom so content can scroll clear of floating button
-                    Section {
-                        Color.clear
-                            .frame(height: 52)
-                            .listRowBackground(Color.clear)
-                    }
                 } else if vm.isLoading {
                     HStack {
                         Spacer()
@@ -238,8 +272,9 @@ struct DeckDetailView: View {
 
             if vm.detail != nil {
                 floatingSortButton(vm)
-                    .padding(.bottom, 16)
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .padding(.vertical, 8)
+                    .frame(maxWidth: .infinity)
+                    .background(Color.mtgSurface)
             }
         }
     }
@@ -454,6 +489,64 @@ struct DeckDetailView: View {
 
                     CompletionBar(progress: detail.completionPercentage)
                         .frame(height: 8)
+
+                    if detail.missingCardsCount > 0 {
+                        HStack(spacing: 8) {
+                            Button {
+                                isAddingMissingToCollection = true
+                                Task {
+                                    _ = try? await appStore.client.addMissingCardsToCollection(deckId: detail.id, userId: appStore.userId, accessToken: appStore.accessToken)
+                                    await vm.load()
+                                    isAddingMissingToCollection = false
+                                }
+                            } label: {
+                                HStack(spacing: 4) {
+                                    if isAddingMissingToCollection {
+                                        ProgressView().tint(.black)
+                                    } else {
+                                        Image(systemName: "checkmark.circle.fill")
+                                        Text("Tengo faltantes")
+                                    }
+                                }
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(Color.black)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 6)
+                                .background(Color.mtgGreen)
+                                .clipShape(RoundedRectangle(cornerRadius: 6))
+                            }
+                            .buttonStyle(.plain)
+                            .disabled(isAddingMissingToCollection)
+
+                            Button {
+                                isAddingMissingToWants = true
+                                Task {
+                                    _ = try? await appStore.client.addDeckMissingToWants(deckId: detail.id, userId: appStore.userId, accessToken: appStore.accessToken)
+                                    isAddingMissingToWants = false
+                                }
+                            } label: {
+                                HStack(spacing: 4) {
+                                    if isAddingMissingToWants {
+                                        ProgressView().tint(.white)
+                                    } else {
+                                        Image(systemName: "heart.fill")
+                                        Text("+ A Wants")
+                                    }
+                                }
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(Color.mtgText)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 6)
+                                .background(Color.mtgSurfaceElevated)
+                                .clipShape(RoundedRectangle(cornerRadius: 6))
+                            }
+                            .buttonStyle(.plain)
+                            .disabled(isAddingMissingToWants)
+
+                            Spacer()
+                        }
+                        .padding(.top, 4)
+                    }
                 }
             }
             .padding(.vertical, 4)

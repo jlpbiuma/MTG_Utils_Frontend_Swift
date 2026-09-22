@@ -357,7 +357,11 @@ struct KPIStat: Identifiable {
 struct KPIStripView: View {
     let stats: [KPIStat]
 
-    private let columns = [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())]
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    private var columns: [GridItem] {
+        Array(repeating: GridItem(.flexible()), count: dynamicTypeSize.isAccessibilitySize ? 1 : 3)
+    }
 
     var body: some View {
         LazyVGrid(columns: columns, spacing: 8) {
@@ -369,10 +373,12 @@ struct KPIStripView: View {
                         .font(.headline.monospacedDigit())
                         .foregroundStyle(.mtgText)
                     Text(stat.label)
-                        .font(.caption2)
+                        .font(.caption)
                         .foregroundStyle(.mtgTextSecondary)
                 }
                 .frame(maxWidth: .infinity)
+                .multilineTextAlignment(.center)
+                .accessibilityElement(children: .combine)
                 .padding(.vertical, 10)
                 .background(Color.mtgSurface, in: RoundedRectangle(cornerRadius: 12))
             }

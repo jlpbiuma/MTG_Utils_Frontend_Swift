@@ -1,11 +1,19 @@
 import SwiftUI
 
-// MARK: - Collection view
+enum CollectionSubTab: String, CaseIterable, Identifiable {
+    case collection = "Colección"
+    case dormant = "Dormidas"
+    case simulated = "Simuladas"
+
+    var id: String { rawValue }
+}
 
 struct CollectionView: View {
     @Environment(AppStore.self) private var appStore
+    @State private var selectedSubTab: CollectionSubTab = .collection
     @State private var viewModel: CollectionViewModel?
     @State private var showingImport = false
+    @State private var showingValueHistory = false
     @State private var showingSortSheet = false
     @State private var selectedCard: CollectionCard?
     @State private var cardEditingEdition: CollectionCard?
@@ -13,26 +21,46 @@ struct CollectionView: View {
     @State private var cardToDelete: CollectionCard?
 
     var body: some View {
-        Group {
-            if let viewModel {
-                content(viewModel)
-            } else {
-                ProgressView()
-            }
-        }
-        .navigationTitle("Colección")
-        .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                Button {
-                    showingImport = true
-                } label: {
-                    Image(systemName: "square.and.arrow.down")
+        VStack(spacing: 0) {
+            Picker("Colección", selection: $selectedSubTab) {
+                ForEach(CollectionSubTab.allCases) { tab in
+                    Text(tab.rawValue).tag(tab)
                 }
-                .accessibilityLabel("Importar colección")
+            }
+            .pickerStyle(.segmented)
+            .padding(.horizontal)
+            .padding(.top, 8)
+            .padding(.bottom, 6)
+            .background(Color.mtgSurface)
+
+            Group {
+                switch selectedSubTab {
+                case .collection:
+                    collectionMainView
+                case .dormant:
+                    DormantCardsView()
+                case .simulated:
+                    SimulatedCollectionsView()
+                }
             }
         }
-        .task {
-            let vm = CollectionViewModel(store: appStore.store, priceProvider: appStore.settings.priceProvider)
+        .navigationTitle(selectedSubTab.rawValue)
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            if selectedSubTab == .collection {
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        showingImport = true
+                    } label: {
+                        Image(systemName: "square.and.arrow.down")
+                    }
+                    .accessibilityLabel("Importar colección")
+                }
+            }
+        }
+        .task(id: selectedSubTab) {
+            guard selectedSubTab == .collection, viewModel == nil else { return }
+            let vm = viewModel ?? CollectionViewModel(store: appStore.store, priceProvider: appStore.settings.priceProvider)
             viewModel = vm
             await vm.load()
         }
@@ -88,11 +116,29 @@ struct CollectionView: View {
         }
     }
 
+    private var collectionMainView: some View {
+        Group {
+            if let viewModel {
+                content(viewModel)
+            } else {
+                ProgressView()
+            }
+        }
+    }
+
     @MainActor
     private func content(_ vm: CollectionViewModel) -> some View {
         @Bindable var vm = vm
 
-        return Group {
+        return VStack(spacing: 0) {
+            if let error = vm.errorMessage {
+                VStack(spacing: 8) {
+                    Text(error).font(.callout).foregroundStyle(.red)
+                    Button("Reintentar") { Task { await vm.load() } }
+                        .frame(minHeight: 44)
+                }
+                .padding()
+            }
             if vm.isLoading && vm.cards.isEmpty {
                 ProgressView("Cargando colección…")
             } else if vm.cards.isEmpty {
@@ -104,7 +150,7 @@ struct CollectionView: View {
                     action: { showingImport = true }
                 )
             } else {
-                ZStack(alignment: .bottom) {
+                VStack(spacing: 0) {
                     List {
                         Section {
                             KPIStripView(stats: [
@@ -112,6 +158,11 @@ struct CollectionView: View {
                                 KPIStat(id: "total", label: "Total cartas", value: "\(vm.stats.totalCards)", systemImage: "shippingbox", tint: .mtgGreen),
                                 KPIStat(id: "value", label: "Valor est.", value: (vm.priceSummary?.totalNetValue ?? 0).formattedPrice(symbol: vm.currencySymbol), systemImage: "eurosign.circle", tint: .mtgAmber),
                             ])
+
+                            DisclosureGroup("Evolución del valor", isExpanded: $showingValueHistory) {
+                                if showingValueHistory { CollectionValueChartView() }
+                            }
+
                             if vm.isCollectionSyncing {
                                 Text("Sincronizando importación…")
                                     .font(.caption2)
@@ -187,19 +238,15 @@ struct CollectionView: View {
                             }
                         }
 
-                        // Bottom spacer to ensure rows aren't covered by floating button
-                        Section {
-                            Color.clear
-                                .frame(height: 52)
-                                .listRowBackground(Color.clear)
-                        }
                     }
+                    .refreshable { await vm.load() }
                     .listStyle(.insetGrouped)
                     .searchable(text: $vm.searchText, prompt: "Buscar por nombre, tipo o edición…")
 
                     floatingSortButton(vm)
-                        .padding(.bottom, 16)
-                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                        .padding(.vertical, 8)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.mtgSurface)
                 }
             }
         }
@@ -229,7 +276,7 @@ struct CollectionView: View {
                 Image(systemName: vm.sortDirection == .ascending ? "arrow.up" : "arrow.down")
                     .font(.system(size: 11, weight: .bold))
             }
-            .foregroundStyle(.white)
+            .foregroundStyle(.black)
             .padding(.horizontal, 16)
             .padding(.vertical, 11)
             .background(
@@ -362,46 +409,68 @@ struct CollectionCardRow: View {
                     Text(card.cardName)
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(.mtgText)
-                        .lineLimit(1)
+                        .fixedSize(horizontal: false, vertical: true)
 
                     Spacer(minLength: 4)
-
-                    ManaCostView(cost: card.manaCost)
                 }
 
-                // Fila 2: Tipo + Insignia de Expansión + Precio
+                ManaCostView(cost: card.manaCost)
+
+                // Type has its own line so long card names and types stay readable.
+                if let typeLine = card.typeLine, !typeLine.isEmpty {
+                    Text(typeLine)
+                        .font(.caption)
+                        .foregroundStyle(.mtgTextSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                // Edition and price remain together below the type.
                 HStack(alignment: .center, spacing: 6) {
-                    if let typeLine = card.typeLine, !typeLine.isEmpty {
-                        Text(typeLine)
-                            .font(.caption2)
-                            .foregroundStyle(.mtgTextSecondary)
-                            .lineLimit(1)
-                    }
-
-                    Spacer(minLength: 4)
-
                     SetExpansionBadge(setCode: card.setCode)
 
                     if unitPrice > 0 {
                         Text(unitPrice.formattedPrice(symbol: currencySymbol))
                             .font(.caption2.weight(.medium).monospacedDigit())
                             .foregroundStyle(.mtgTextSecondary)
-                            .accessibilityLabel("Precio unitario")
+                            .accessibilityLabel("Precio unitario: \(unitPrice.formattedPrice(symbol: currencySymbol))")
                     }
                 }
 
-                // Fila 3: Indicador de posesión en colección
-                HStack(spacing: 5) {
-                    OwnershipStatusChip(
-                        text: "En colección: \(card.quantity)",
-                        systemImage: "checkmark.circle.fill",
-                        tint: .mtgGreen
-                    )
+                // Fila 3: Indicador de posesión en colección y mazos que la piden
+                ViewThatFits(in: .horizontal) {
+                    ownershipBadges
+                    VStack(alignment: .leading, spacing: 4) { ownershipContent }
                 }
                 .padding(.top, 1)
             }
         }
         .padding(.vertical, 3)
+    }
+
+    private var ownershipBadges: some View {
+        HStack(spacing: 6) { ownershipContent }
+    }
+
+    @ViewBuilder private var ownershipContent: some View {
+        OwnershipStatusChip(
+            text: "En colección: \(card.quantity)",
+            systemImage: "checkmark.circle.fill",
+            tint: .mtgGreen
+        )
+
+        if card.requestedInDecksCount > 0 || !card.requestedInDecks.isEmpty {
+            HStack(spacing: 3) {
+                Image(systemName: "rectangle.stack.fill")
+                    .font(.system(size: 8))
+                Text("En \(max(card.requestedInDecksCount, card.requestedInDecks.count)) mazos")
+                    .font(.system(size: 10, weight: .semibold))
+            }
+            .padding(.horizontal, 6)
+            .padding(.vertical, 2)
+            .background(Color.mtgAmber.opacity(0.18))
+            .foregroundStyle(Color.mtgAmber)
+            .clipShape(Capsule())
+        }
     }
 }
 

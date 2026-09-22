@@ -115,3 +115,70 @@ struct PricingCardInput: Codable, Hashable {
         self.isMissing = isMissing
     }
 }
+
+// MARK: - Price Movers
+
+enum MoversScope: String, Codable, CaseIterable, Identifiable {
+    case global
+    case collection
+    case wants
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .global: return "Mercado Global"
+        case .collection: return "Mi Colección"
+        case .wants: return "Mis Wants"
+        }
+    }
+}
+
+struct PriceMoverItem: Codable, Identifiable, Hashable {
+    let printingId: String
+    let catalogId: String?
+    let cardName: String
+    let setCode: String?
+    let collectorNumber: String?
+    let imageUri: String?
+    let provider: PriceProvider
+    let currency: String
+    let currencySymbol: String
+    let currentPrice: Double
+    let baselinePrice: Double
+    let changeAbs: Double
+    let changePct: Double
+    let baselineAt: Date
+    let currentAt: Date
+
+    var id: String { printingId }
+}
+
+struct PriceMoversResponse: Codable {
+    let provider: PriceProvider
+    let currency: String
+    let currencySymbol: String
+    let windowDays: Int
+    let scope: MoversScope
+    let gainers: [PriceMoverItem]
+    let losers: [PriceMoverItem]
+    let generatedAt: Date
+}
+
+// MARK: - Collection Value History
+
+struct CollectionValueHistoryPoint: Codable, Identifiable, Hashable {
+    let date: String
+    let totalValue: Double
+    let ownedCards: Int
+
+    var id: String { date }
+}
+
+struct CollectionValueHistoryResponse: Codable {
+    let provider: PriceProvider
+    let currency: String
+    let currencySymbol: String
+    let currentValue: Double
+    let points: [CollectionValueHistoryPoint]
+}

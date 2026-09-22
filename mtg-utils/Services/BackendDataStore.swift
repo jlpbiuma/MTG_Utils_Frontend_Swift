@@ -23,6 +23,8 @@ struct BackendDeckSummary: Decodable {
     let ownedCards: Int
     let missingCards: Int
     let completionPercentage: Double
+    let colors: [String]?
+    let totalValue: Double?
 }
 
 struct BackendOtherDeckAssignment: Decodable {
@@ -67,9 +69,11 @@ struct BackendDeckDetail: Decodable {
     let missingCards: Int
     let completionPercentage: Double
     let cards: [BackendDeckCard]
+    let priceSummary: PriceSummary?
+    let commanderColorIdentity: [String]?
 }
 
-struct BackendCollectionCard: Decodable {
+struct BackendCollectionCard: Codable, Identifiable, Hashable {
     let id: String
     let userId: String
     let cardScryfallId: String
@@ -81,6 +85,14 @@ struct BackendCollectionCard: Decodable {
     let typeLine: String?
     let imageUri: String?
     let updatedAt: Date
+    let isFoil: Bool?
+    let requestedInDecks: [DeckRequirement]?
+    let requestedInDecksCount: Int?
+}
+
+private struct BackendCollectionView: Decodable {
+    let cards: [BackendCollectionCard]
+    let priceSummary: PriceSummary
 }
 
 // MARK: - Backend request payloads
@@ -250,23 +262,17 @@ final class BackendDataStore: AppDataStoring {
     }
 
     func allDeckSummaries() async throws -> [DeckSummary] {
-        if let cache = decksCache, Date().timeIntervalSince(cache.date) < cacheLifetime {
-            return cache.value.map { deck in
-                DeckSummary(id: deck.id, userId: deck.userId, name: deck.name, format: deck.format, commander: deck.commander,
-                            totalCards: deck.cards.filter { !$0.isCommander }.reduce(0) { $0 + $1.quantity },
-                            uniqueCards: deck.cards.filter { !$0.isCommander }.count,
-                            estimatedPrice: estimateDeckPrice(cards: deck.cards), colors: extractDeckColors(cards: deck.cards))
-            }
-        }
         let summaries = try await self.getJSON([BackendDeckSummary].self, at: "api/decks")
         return summaries.map(Self.deckSummary(from:))
     }
 
+    func deckSnapshot(id: String, provider: PriceProvider = .cardmarket) async throws -> (deck: Deck, detail: DeckDetail, prices: PriceSummary?, commanderColors: [String]) {
+        let payload = try await getJSON(BackendDeckDetail.self, at: "api/decks/\(id)/view?provider=\(provider.rawValue)")
+        return (Self.deck(from: payload), Self.deckDetail(from: payload), payload.priceSummary, payload.commanderColorIdentity ?? [])
+    }
+
     func deckDetail(id: String) async throws -> DeckDetail? {
-        guard let detail = try? await self.getJSON(BackendDeckDetail.self, at: "api/decks/\(id)") else {
-            return nil
-        }
-        return Self.deckDetail(from: detail)
+        try await deckSnapshot(id: id).detail
     }
 
     func saveDecks(_ decks: [Deck]) async throws {
@@ -285,6 +291,13 @@ final class BackendDataStore: AppDataStoring {
             deckIDMap[orphan.id] = nil
         }
         decksCache = (decks, Date())
+    }
+
+    func collectionSnapshot(provider: PriceProvider) async throws -> (cards: [CollectionCard], prices: PriceSummary) {
+        let payload = try await getJSON(BackendCollectionView.self, at: "api/collection/view?provider=\(provider.rawValue)")
+        let cards = payload.cards.map(Self.collectionCard(from:))
+        collectionCache = (cards, Date())
+        return (cards, payload.priceSummary)
     }
 
     func allCollection() async throws -> [CollectionCard] {
@@ -330,6 +343,85 @@ final class BackendDataStore: AppDataStoring {
         }
     }
 
+    // MARK: - Granular deck operations
+
+    func createDeck(_ deck: Deck) async throws -> Deck {
+        let created = try await createDeckLocal(deck)
+        decksCache = nil
+        return created
+    }
+
+    func updateDeck(_ deck: Deck) async throws {
+        if let server = try? await self.getJSON(BackendDeckDetail.self, at: "api/decks/\(deck.id)") {
+            try await updateDeck(server: server, with: deck)
+        } else {
+            _ = try await createDeckLocal(deck)
+        }
+        decksCache = nil
+    }
+
+    func deleteDeck(id: String) async throws {
+        _ = try await sendStatus(method: "DELETE", path: "api/decks/\(id)")
+        deckIDMap[id] = nil
+        if var cache = decksCache {
+            cache.value.removeAll { $0.id == id }
+            decksCache = cache
+        }
+    }
+
+    func addDeckCard(deckId: String, card: DeckCard) async throws {
+        _ = try await sendStatus(
+            method: "POST",
+            path: "api/decks/\(deckId)/cards",
+            body: BackendDeckCardRequest(from: card)
+        )
+        decksCache = nil
+    }
+
+    func updateDeckCard(cardId: String, quantity: Int, setCode: String?) async throws {
+        _ = try await sendStatus(
+            method: "PATCH",
+            path: "api/decks/cards/\(cardId)",
+            body: BackendCardUpdateRequest(quantity: quantity, setCode: setCode)
+        )
+        decksCache = nil
+    }
+
+    func removeDeckCard(cardId: String) async throws {
+        _ = try await sendStatus(method: "DELETE", path: "api/decks/cards/\(cardId)")
+        decksCache = nil
+    }
+
+    // MARK: - Granular collection operations
+
+    func addCollectionCard(_ card: CollectionCard) async throws {
+        _ = try await self.sendJSON(
+            BackendCollectionCard.self,
+            method: "POST",
+            path: "api/collection/add-or-increment",
+            body: BackendCollectionCardRequest(from: card)
+        )
+        collectionCache = nil
+    }
+
+    func updateCollectionCard(id: String, quantity: Int, setCode: String?) async throws {
+        if quantity <= 0 {
+            try await removeCollectionCard(id: id)
+            return
+        }
+        _ = try await sendStatus(
+            method: "PATCH",
+            path: "api/collection/\(id)",
+            body: BackendCardUpdateRequest(quantity: quantity, setCode: setCode)
+        )
+        collectionCache = nil
+    }
+
+    func removeCollectionCard(id: String) async throws {
+        _ = try await sendStatus(method: "DELETE", path: "api/collection/\(id)")
+        collectionCache = nil
+    }
+
     // MARK: Deck sync helpers
 
     private func fetchAllDeckDetails() async throws -> [BackendDeckDetail] {
@@ -343,7 +435,8 @@ final class BackendDataStore: AppDataStoring {
         return details
     }
 
-    private func createDeckLocal(_ deck: Deck) async throws {
+    @discardableResult
+    private func createDeckLocal(_ deck: Deck) async throws -> Deck {
         let created = try await self.sendJSON(
             BackendDeckSummary.self,
             method: "POST",
@@ -359,10 +452,13 @@ final class BackendDataStore: AppDataStoring {
         )
         deckIDMap[deck.id] = created.id
         // The backend auto-creates the commander card; refetch to sync against reality.
-        let detail = try? await self.getJSON(BackendDeckDetail.self, at: "api/decks/\(created.id)")
-        if let detail {
+        if let detail = try? await self.getJSON(BackendDeckDetail.self, at: "api/decks/\(created.id)") {
             try await syncCards(localDeck: deck, server: detail, removeOmitted: false)
+            return Self.deck(from: detail)
         }
+        var mapped = deck
+        mapped.id = created.id
+        return mapped
     }
 
     private func updateDeck(server: BackendDeckDetail, with deck: Deck) async throws {
@@ -444,7 +540,9 @@ final class BackendDataStore: AppDataStoring {
             uniqueCards: s.uniqueCards,
             ownedCards: s.ownedCards,
             missingCardsCount: s.missingCards,
-            completionPercentage: s.completionPercentage
+            completionPercentage: s.completionPercentage,
+            estimatedPrice: s.totalValue ?? 0,
+            colors: s.colors ?? []
         )
     }
 
@@ -532,7 +630,10 @@ final class BackendDataStore: AppDataStoring {
             collectorNumber: card.collectorNumber,
             manaCost: card.manaCost,
             typeLine: card.typeLine,
-            imageUri: card.imageUri
+            imageUri: card.imageUri,
+            isFoil: card.isFoil ?? false,
+            requestedInDecks: card.requestedInDecks ?? [],
+            requestedInDecksCount: card.requestedInDecksCount ?? 0
         )
     }
 

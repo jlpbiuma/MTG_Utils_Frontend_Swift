@@ -42,7 +42,7 @@ struct DecksListView: View {
             }
         }
         .task {
-            let vm = DecksListViewModel(store: appStore.store, userId: appStore.userId)
+            let vm = viewModel ?? DecksListViewModel(store: appStore.store, userId: appStore.userId)
             viewModel = vm
             await vm.load()
         }
@@ -100,7 +100,15 @@ struct DecksListView: View {
     private func content(_ viewModel: DecksListViewModel) -> some View {
         @Bindable var vm = viewModel
 
-        return Group {
+        return VStack(spacing: 0) {
+            if let error = vm.errorMessage {
+                VStack(spacing: 8) {
+                    Text(error).font(.callout).foregroundStyle(.red)
+                    Button("Reintentar") { Task { await vm.load() } }
+                        .frame(minHeight: 44)
+                }
+                .padding()
+            }
             if vm.isLoading && vm.decks.isEmpty {
                 ProgressView("Cargando mazos…")
             } else if vm.decks.isEmpty {
@@ -120,7 +128,7 @@ struct DecksListView: View {
                     action: { vm.resetFilters() }
                 )
             } else {
-                ZStack(alignment: .bottom) {
+                VStack(spacing: 0) {
                     List {
                         if vm.isDeckSyncing {
                             HStack(spacing: 8) {
@@ -189,18 +197,14 @@ struct DecksListView: View {
                             }
                         }
 
-                        // Bottom spacer for floating button
-                        Section {
-                            Color.clear
-                                .frame(height: 52)
-                                .listRowBackground(Color.clear)
-                        }
                     }
+                    .refreshable { await vm.load() }
                     .listStyle(.plain)
 
                     floatingSortButton(vm)
-                        .padding(.bottom, 16)
-                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                        .padding(.vertical, 8)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.mtgSurface)
                 }
             }
         }
@@ -240,7 +244,7 @@ struct DecksListView: View {
                     }
                 }
             }
-            .foregroundStyle(.white)
+            .foregroundStyle(.black)
             .padding(.horizontal, 16)
             .padding(.vertical, 11)
             .background(

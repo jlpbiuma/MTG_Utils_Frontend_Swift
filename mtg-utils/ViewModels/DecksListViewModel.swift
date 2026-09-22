@@ -96,6 +96,11 @@ final class DecksListViewModel {
         errorMessage = nil
         defer { isLoading = false }
         do {
+            if store is BackendDataStore {
+                // The web uses the same summary endpoint; no per-deck requests.
+                decks = try await store.allDeckSummaries()
+                return
+            }
             let rawDecks = try await store.allDecks()
             let collection = try await store.allCollection()
             let ownershipIndex = buildOwnershipIndex(collection)
@@ -144,9 +149,7 @@ final class DecksListViewModel {
     }
 
     func createDeck(deck: Deck) async throws {
-        var all = try await store.allDecks()
-        all.append(deck)
-        try await store.saveDecks(all)
+        _ = try await store.createDeck(deck)
     }
 
     /// Adds an imported deck to the local list immediately and persists it in the background.
@@ -184,13 +187,7 @@ final class DecksListViewModel {
         let store = self.store
         deckSyncTask = Task { [weak self] in
             do {
-                var allDecks = try await store.allDecks()
-                if let index = allDecks.firstIndex(where: { $0.id == deck.id }) {
-                    allDecks[index] = deck
-                } else {
-                    allDecks.append(deck)
-                }
-                try await store.saveDecks(allDecks)
+                _ = try await store.createDeck(deck)
                 await self?.load()
                 self?.isDeckSyncing = false
             } catch is CancellationError {
@@ -203,26 +200,22 @@ final class DecksListViewModel {
     }
 
     func deleteDeck(id: String) async throws {
-        var all = try await store.allDecks()
-        all.removeAll { $0.id == id }
-        try await store.saveDecks(all)
+        try await store.deleteDeck(id: id)
     }
 
     func updateDeck(_ updated: Deck) async throws {
-        var all = try await store.allDecks()
-        if let idx = all.firstIndex(where: { $0.id == updated.id }) {
-            all[idx] = updated
-        }
-        try await store.saveDecks(all)
+        try await store.updateDeck(updated)
     }
 
     func deck(id: String) async throws -> Deck? {
-        try await store.allDecks().first { $0.id == id }
+        if let backend = store as? BackendDataStore {
+            return try await backend.deckSnapshot(id: id).deck
+        }
+        return try await store.allDecks().first { $0.id == id }
     }
 
     func duplicateDeck(id: String) async throws {
-        var all = try await store.allDecks()
-        guard var copy = all.first(where: { $0.id == id }) else { return }
+        guard var copy = try await deck(id: id) else { return }
 
         copy.id = UUID().uuidString
         copy.name = "\(copy.name) (Copia)"
@@ -235,8 +228,7 @@ final class DecksListViewModel {
             return cloned
         }
 
-        all.append(copy)
-        try await store.saveDecks(all)
+        _ = try await store.createDeck(copy)
     }
 
     func decklistText(id: String) async throws -> String? {

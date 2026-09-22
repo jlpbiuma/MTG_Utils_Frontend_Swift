@@ -39,7 +39,7 @@ final class DeckDetailViewModel {
         if let quote = priceSummary?.quote(forCardScryfallId: card.cardScryfallId, normalizedName: normalizeCardName(card.cardName)) {
             return quote.unitPrice.trend
         }
-        return representativePrice(card.cardName, card.typeLine)
+        return store is BackendDataStore ? 0 : representativePrice(card.cardName, card.typeLine)
     }
 
     init(deck: Deck, store: AppDataStoring, catalog: ScryfallClient? = nil, priceProvider: PriceProvider = .cardmarket) {
@@ -118,6 +118,14 @@ final class DeckDetailViewModel {
         defer { isLoading = false }
 
         do {
+            if let backend = store as? BackendDataStore {
+                let snapshot = try await backend.deckSnapshot(id: deckId, provider: priceProvider)
+                deck = snapshot.deck
+                detail = snapshot.detail
+                priceSummary = snapshot.prices
+                commanderColorIdentity = snapshot.commanderColors
+                return
+            }
             let collection = try await store.allCollection()
             let allDecks = try await store.allDecks()
             if let latestDeck = allDecks.first(where: { $0.id == deckId }) {
@@ -275,10 +283,6 @@ final class DeckDetailViewModel {
     func addCard(_ card: ScryfallCard, quantity: Int = 1, isSideboard: Bool = false) async throws {
         guard quantity > 0 else { return }
 
-        var all = try await store.allDecks()
-        guard let index = all.firstIndex(where: { $0.id == deckId }) else { return }
-        var target = all[index]
-
         let newCard = DeckCard(
             cardScryfallId: card.id,
             cardName: card.name,
@@ -290,53 +294,42 @@ final class DeckDetailViewModel {
             imageUri: card.displayImageUri
         )
 
-        if let existing = target.cards.firstIndex(where: {
-            $0.cardScryfallId == card.id && $0.isSideboard == isSideboard
-        }) {
-            target.cards[existing].quantity += quantity
-        } else {
-            target.cards.append(newCard)
-        }
-
-        all[index] = target
-        try await store.saveDecks(all)
+        try await store.addDeckCard(deckId: deckId, card: newCard)
         await load()
     }
 
     func removeCard(id: String) async {
-        await updateCard(id: id) { _ in nil }
+        do {
+            try await store.removeDeckCard(cardId: id)
+            await load()
+        } catch {
+            errorMessage = "No se pudo eliminar la carta: \(error.localizedDescription)"
+        }
     }
 
     func updateEdition(id: String, setCode: String?) async {
         let cleanedSetCode = setCode?.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
-        await updateCard(id: id) { card in
-            var updated = card
-            updated.setCode = cleanedSetCode?.isEmpty == true ? nil : cleanedSetCode
-            return updated
+        guard let card = detail?.cards.first(where: { $0.id == id }) else { return }
+        do {
+            try await store.updateDeckCard(
+                cardId: id,
+                quantity: card.quantity,
+                setCode: cleanedSetCode?.isEmpty == true ? nil : cleanedSetCode
+            )
+            await load()
+        } catch {
+            errorMessage = "No se pudo actualizar la edición: \(error.localizedDescription)"
         }
     }
 
     func updateQuantity(id: String, quantity: Int) async {
         guard quantity >= 1 else { return }
-        await updateCard(id: id) { card in
-            var updated = card
-            updated.quantity = quantity
-            updated.assignedQuantity = min(updated.assignedQuantity, quantity)
-            return updated
-        }
-    }
-
-    private func updateCard(id: String, transform: (DeckCard) -> DeckCard?) async {
+        guard let card = detail?.cards.first(where: { $0.id == id }) else { return }
         do {
-            var all = try await store.allDecks()
-            guard let deckIndex = all.firstIndex(where: { $0.id == deckId }) else { return }
-            all[deckIndex].cards = all[deckIndex].cards.compactMap { card in
-                card.id == id ? transform(card) : card
-            }
-            try await store.saveDecks(all)
+            try await store.updateDeckCard(cardId: id, quantity: quantity, setCode: card.setCode)
             await load()
         } catch {
-            errorMessage = "No se pudo actualizar el mazo: \(error.localizedDescription)"
+            errorMessage = "No se pudo actualizar la cantidad: \(error.localizedDescription)"
         }
     }
 }

@@ -12,6 +12,9 @@ struct CollectionCard: Identifiable, Hashable {
     var manaCost: String?
     var typeLine: String?
     var imageUri: String?
+    var isFoil: Bool
+    var requestedInDecks: [DeckRequirement]
+    var requestedInDecksCount: Int
 
     init(
         id: String = UUID().uuidString,
@@ -23,7 +26,10 @@ struct CollectionCard: Identifiable, Hashable {
         collectorNumber: String? = nil,
         manaCost: String? = nil,
         typeLine: String? = nil,
-        imageUri: String? = nil
+        imageUri: String? = nil,
+        isFoil: Bool = false,
+        requestedInDecks: [DeckRequirement] = [],
+        requestedInDecksCount: Int = 0
     ) {
         self.id = id
         self.userId = userId
@@ -35,6 +41,9 @@ struct CollectionCard: Identifiable, Hashable {
         self.manaCost = manaCost
         self.typeLine = typeLine
         self.imageUri = imageUri
+        self.isFoil = isFoil
+        self.requestedInDecks = requestedInDecks
+        self.requestedInDecksCount = requestedInDecksCount
     }
 
     var isPending: Bool { cardScryfallId.hasPrefix("pending:") }
@@ -43,4 +52,33 @@ struct CollectionCard: Identifiable, Hashable {
 struct CollectionStats: Hashable {
     var uniqueCards: Int
     var totalCards: Int
+}
+
+struct CollectionGroupSection: Codable, Identifiable, Hashable {
+    let key: String
+    let label: String
+    let order: Int
+    let totalCards: Int
+    let uniqueCards: Int
+    let ownedCards: Int
+    let missingCards: Int
+    let completionPercentage: Double
+    let sectionTotalPrice: Double
+    let sectionMissingPrice: Double
+    let sectionOwnedPrice: Double
+    let currencySymbol: String
+    let cards: [BackendCollectionCard]
+
+    var id: String { key }
+}
+
+struct CollectionQueryResponse: Codable {
+    let query: String
+    let grouped: Bool
+    let provider: String
+    let currencySymbol: String
+    let totalCards: Int
+    let uniqueCards: Int
+    let sections: [CollectionGroupSection]
+    let cards: [BackendCollectionCard]
 }

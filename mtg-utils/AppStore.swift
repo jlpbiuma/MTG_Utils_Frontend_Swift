@@ -231,6 +231,6 @@ private struct SavedSession: Codable {
 enum AppTab: Hashable {
     case decks
     case collection
-    case scanner
-    case account
+    case buy
+    case prices
 }

@@ -6,7 +6,9 @@ import Observation
 @Observable
 @MainActor
 final class CollectionViewModel {
-    private(set) var cards: [CollectionCard] = []
+    private(set) var cards: [CollectionCard] = [] {
+        didSet { dataRevision &+= 1 }
+    }
     private(set) var stats: CollectionStats = CollectionStats(uniqueCards: 0, totalCards: 0)
     private(set) var isLoading = false
     private(set) var errorMessage: String?
@@ -16,7 +18,9 @@ final class CollectionViewModel {
     var sortDirection: SortDirection = .ascending
     var isGrouped = true
     var searchText = ""
-    private(set) var priceSummary: PriceSummary?
+    private(set) var priceSummary: PriceSummary? {
+        didSet { dataRevision &+= 1 }
+    }
 
     var currencySymbol: String {
         priceSummary?.currencySymbol ?? "€"
@@ -26,7 +30,7 @@ final class CollectionViewModel {
         if let quote = priceSummary?.quote(forCardScryfallId: card.cardScryfallId, normalizedName: normalizeCardName(card.cardName)) {
             return quote.unitPrice.trend
         }
-        return representativePrice(card.cardName, card.typeLine)
+        return store is BackendDataStore ? 0 : representativePrice(card.cardName, card.typeLine)
     }
 
     private let store: AppDataStoring
@@ -38,21 +42,20 @@ final class CollectionViewModel {
         self.priceProvider = priceProvider
     }
 
-    private var lastCardsCount: Int = -1
-    private var lastSortField: SortField?
-    private var lastSortDirection: SortDirection?
-    private var lastSearchText: String?
-    private var lastPriceSummary: PriceSummary?
+    private var dataRevision = 0
+    @ObservationIgnored private var lastDataRevision = -1
+    @ObservationIgnored private var lastSortField: SortField?
+    @ObservationIgnored private var lastSortDirection: SortDirection?
+    @ObservationIgnored private var lastSearchText: String?
 
-    private var _cachedSorted: [CollectionCard] = []
-    private var _cachedGroups: [GroupedCardSection<CollectionCard>] = []
+    @ObservationIgnored private var _cachedSorted: [CollectionCard] = []
+    @ObservationIgnored private var _cachedGroups: [GroupedCardSection<CollectionCard>] = []
 
     private func invalidateCacheIfNeeded() {
-        if lastCardsCount != cards.count ||
+        if lastDataRevision != dataRevision ||
            lastSortField != sortField ||
            lastSortDirection != sortDirection ||
-           lastSearchText != searchText ||
-           lastPriceSummary != priceSummary {
+           lastSearchText != searchText {
 
             var result = cards
             let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -66,11 +69,10 @@ final class CollectionViewModel {
             _cachedSorted = sortCards(result, by: sortField, direction: sortDirection)
             _cachedGroups = groupCardsByType(_cachedSorted, priceSummary: priceSummary)
 
-            lastCardsCount = cards.count
+            lastDataRevision = dataRevision
             lastSortField = sortField
             lastSortDirection = sortDirection
             lastSearchText = searchText
-            lastPriceSummary = priceSummary
         }
     }
 
@@ -94,15 +96,14 @@ final class CollectionViewModel {
         errorMessage = nil
         defer { isLoading = false }
         do {
-            cards = try await store.allCollection()
-            rebuildDerivedValues()
             if let backend = store as? BackendDataStore {
-                let requestCards = cards.map {
-                    PricingCardInput(name: $0.cardName, scryfallId: $0.cardScryfallId, quantity: $0.quantity)
-                }
-                if let serverSummary = try? await backend.priceSummary(forCards: requestCards, provider: priceProvider) {
-                    priceSummary = serverSummary
-                }
+                let snapshot = try await backend.collectionSnapshot(provider: priceProvider)
+                cards = snapshot.cards
+                stats = CollectionStats(uniqueCards: cards.count, totalCards: cards.reduce(0) { $0 + $1.quantity })
+                priceSummary = snapshot.prices
+            } else {
+                cards = try await store.allCollection()
+                rebuildDerivedValues()
             }
         } catch {
             errorMessage = "No se pudo cargar la colección: \(error.localizedDescription)"
@@ -114,39 +115,47 @@ final class CollectionViewModel {
     }
 
     func removeCard(id: String) async {
-        let updatedCards = cards.filter { $0.id != id }
-        await persist(updatedCards)
+        do {
+            try await store.removeCollectionCard(id: id)
+            cards = cards.filter { $0.id != id }
+            rebuildDerivedValues()
+        } catch {
+            errorMessage = "No se pudo eliminar la carta de la colección: \(error.localizedDescription)"
+        }
     }
 
     func updateEdition(id: String, setCode: String?) async {
         let cleanedSetCode = setCode?.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
-        let updatedCards = cards.map { card -> CollectionCard in
-            guard card.id == id else { return card }
-            var updated = card
-            updated.setCode = cleanedSetCode?.isEmpty == true ? nil : cleanedSetCode
-            return updated
+        guard let card = cards.first(where: { $0.id == id }) else { return }
+        let finalSetCode = cleanedSetCode?.isEmpty == true ? nil : cleanedSetCode
+        do {
+            try await store.updateCollectionCard(id: id, quantity: card.quantity, setCode: finalSetCode)
+            cards = cards.map { c in
+                guard c.id == id else { return c }
+                var updated = c
+                updated.setCode = finalSetCode
+                return updated
+            }
+            rebuildDerivedValues()
+        } catch {
+            errorMessage = "No se pudo actualizar la edición: \(error.localizedDescription)"
         }
-        await persist(updatedCards)
     }
 
     func updateQuantity(id: String, quantity: Int) async {
         guard quantity >= 1 else { return }
-        let updatedCards = cards.map { card -> CollectionCard in
-            guard card.id == id else { return card }
-            var updated = card
-            updated.quantity = quantity
-            return updated
-        }
-        await persist(updatedCards)
-    }
-
-    private func persist(_ updatedCards: [CollectionCard]) async {
+        guard let card = cards.first(where: { $0.id == id }) else { return }
         do {
-            try await store.saveCollection(updatedCards)
-            cards = updatedCards
+            try await store.updateCollectionCard(id: id, quantity: quantity, setCode: card.setCode)
+            cards = cards.map { c in
+                guard c.id == id else { return c }
+                var updated = c
+                updated.quantity = quantity
+                return updated
+            }
             rebuildDerivedValues()
         } catch {
-            errorMessage = "No se pudo guardar la colección: \(error.localizedDescription)"
+            errorMessage = "No se pudo actualizar la cantidad: \(error.localizedDescription)"
         }
     }
 

@@ -22,7 +22,7 @@ enum AppConfiguration {
         {
             return url
         }
-        return URL(string: "http://192.168.0.112:8000")!
+        return URL(string: "http://192.168.0.4:8000")!
     }
 
     /// Converts worker URLs that use the host's loopback address into URLs
