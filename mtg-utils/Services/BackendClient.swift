@@ -660,6 +660,41 @@ final class BackendClient {
         guard (200..<300).contains(http.statusCode) else { throw BackendClientError.httpStatus(http.statusCode) }
         return try BackendDataStore.decoder.decode(T.self, from: data)
     }
+
+    // MARK: - Card scan (OCR home via backend)
+
+    /// `POST /api/cards/from-image` — multipart JPEG → OCR title → cheapest local printing.
+    func scanCardFromImage(
+        imageJPEG: Data,
+        filename: String = "card.jpg",
+        userId: String? = nil,
+        accessToken: String? = nil
+    ) async throws -> CardScanMatch {
+        let url = baseURL.appendingPathComponent("api/cards/from-image")
+        let boundary = "Boundary-\(UUID().uuidString)"
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        request.timeoutInterval = 30
+        if let userId, !userId.isEmpty { request.setValue(userId, forHTTPHeaderField: "X-User-Id") }
+        if let accessToken, !accessToken.isEmpty {
+            request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        }
+
+        var body = Data()
+        body.append("--\(boundary)\r\n".data(using: .utf8)!)
+        body.append("Content-Disposition: form-data; name=\"file\"; filename=\"\(filename)\"\r\n".data(using: .utf8)!)
+        body.append("Content-Type: image/jpeg\r\n\r\n".data(using: .utf8)!)
+        body.append(imageJPEG)
+        body.append("\r\n--\(boundary)--\r\n".data(using: .utf8)!)
+        request.httpBody = body
+
+        let (data, response) = try await session.data(for: request)
+        guard let http = response as? HTTPURLResponse else { throw BackendClientError.invalidResponse }
+        guard (200..<300).contains(http.statusCode) else { throw BackendClientError.httpStatus(http.statusCode) }
+        return try BackendDataStore.decoder.decode(CardScanMatch.self, from: data)
+    }
 }
 
 enum BackendClientError: LocalizedError {

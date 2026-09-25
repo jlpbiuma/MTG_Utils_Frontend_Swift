@@ -1,75 +1,66 @@
-import CoreGraphics
 import Foundation
 import Testing
 @testable import mtg_utils
 
-// Tests for the camera card scanner: name normalization, stability voting,
-// OCR → resolution pipeline, and collection merge persistence.
+// Tests for the camera card scanner: backend OCR resolve + collection merge.
 
 // MARK: - Fixtures
 
-private let boltCard = ScryfallCard(
-    id: "uuid-bolt",
-    name: "Lightning Bolt",
-    manaCost: "{R}",
-    cmc: 1,
-    typeLine: "Instant",
-    oracleText: nil,
-    set: "sta",
-    setName: "Starter 2022",
-    collectorNumber: "9",
-    rarity: "common",
-    imageUris: nil,
-    cardFaces: nil,
-    colorIdentity: ["R"]
+private let boltMatch = CardScanMatch(
+    ocrTitle: "Lightning Bolt",
+    matchScore: 0,
+    catalog: CardScanCatalogInfo(
+        id: "cat-bolt",
+        name: "Lightning Bolt",
+        normalizedName: "lightning bolt",
+        manaCost: "{R}",
+        typeLine: "Instant",
+        imageUri: nil
+    ),
+    printing: CardScanPrintingInfo(
+        id: "uuid-bolt",
+        catalogId: "cat-bolt",
+        setCode: "sta",
+        collectorNumber: "9",
+        imageUri: nil,
+        priceEur: 0.5,
+        priceCardmarketTrend: 0.45
+    ),
+    alternatives: []
 )
 
-private let counterspellCard = ScryfallCard(
-    id: "uuid-counterspell",
-    name: "Counterspell",
-    manaCost: "{U}{U}",
-    cmc: 2,
-    typeLine: "Instant",
-    oracleText: nil,
-    set: "frf",
-    setName: "Fate Reforged",
-    collectorNumber: "3",
-    rarity: "uncommon",
-    imageUris: nil,
-    cardFaces: nil,
-    colorIdentity: ["U"]
+private let counterspellMatch = CardScanMatch(
+    ocrTitle: "Counterspell",
+    matchScore: 0,
+    catalog: CardScanCatalogInfo(
+        id: "cat-counterspell",
+        name: "Counterspell",
+        normalizedName: "counterspell",
+        manaCost: "{U}{U}",
+        typeLine: "Instant",
+        imageUri: nil
+    ),
+    printing: CardScanPrintingInfo(
+        id: "uuid-counterspell",
+        catalogId: "cat-counterspell",
+        setCode: "frf",
+        collectorNumber: "3",
+        imageUri: nil,
+        priceEur: 1.0,
+        priceCardmarketTrend: 0.9
+    ),
+    alternatives: []
 )
 
-private func makeImage() -> CGImage {
-    let context = CGContext(
-        data: nil,
-        width: 2,
-        height: 2,
-        bitsPerComponent: 8,
-        bytesPerRow: 2 * 4,
-        space: CGColorSpaceCreateDeviceRGB(),
-        bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
-    )!
-    return context.makeImage()!
-}
-
-private func makeScanner(_ card: ScryfallCard? = boltCard) -> StubCardScanService {
-    let candidates = [CardScanCandidate(confidence: 0.9, text: "  Lightning  Bolt ")]
-    return StubCardScanService(candidates: candidates, resolvedCard: card)
+private func makeResolver(_ match: CardScanMatch? = boltMatch) -> StubCardScanResolver {
+    StubCardScanResolver(match: match)
 }
 
 private func makeViewModel(
-    scanner: CardScanning = makeScanner(),
-    store: AppDataStoring = MockDataStore(seed: false),
-    minimumStableFrames: Int = 3,
-    scanThrottle: TimeInterval = 0
+    resolver: CardScanResolving = makeResolver(),
+    store: AppDataStoring = MockDataStore(seed: false)
 ) -> CardScannerViewModel {
-    CardScannerViewModel(
-        scanner: scanner,
-        store: store,
-        minimumStableFrames: minimumStableFrames,
-        scanThrottle: scanThrottle
-    )
+    CardScannerViewModel(resolver: resolver, store: store)
 }
 
 // MARK: - Name normalization
@@ -81,97 +72,38 @@ struct ScanNameNormalizationTests {
         #expect(normalizeCardName("lightning bolt") == "lightning bolt")
         #expect(normalizeCardName("") == "")
     }
-
-    @Test func candidateNormalizedNameMirrorsNormalization() {
-        let candidate = CardScanCandidate(confidence: 0.8, text: "  Black   Lotus ")
-        #expect(candidate.normalizedName == "black lotus")
-    }
-}
-
-// MARK: - Stability voting
-
-@Suite("Scan Stability Voting")
-struct ScanStabilityTests {
-    @Test func requiresThreeConsecutiveFrames() {
-        let vm = makeViewModel()
-        let candidates = [CardScanCandidate(confidence: 0.9, text: "Lightning Bolt")]
-
-        #expect(vm.stableBest(from: candidates) == nil)
-        #expect(vm.stableBest(from: candidates) == nil)
-        #expect(vm.stableBest(from: candidates)?.normalizedName == "lightning bolt")
-    }
-
-    @Test func nameChangeResetsVote() {
-        let vm = makeViewModel(minimumStableFrames: 3)
-        let bolt = [CardScanCandidate(confidence: 0.9, text: "Lightning Bolt")]
-        let counterspell = [CardScanCandidate(confidence: 0.9, text: "Counterspell")]
-
-        vm.stableBest(from: bolt)
-        vm.stableBest(from: bolt)
-        vm.stableBest(from: bolt)
-
-        vm.stableBest(from: counterspell)
-        #expect(vm.stableFrames == 1)
-        #expect(vm.stableBest(from: counterspell) == nil)
-        #expect(vm.stableBest(from: counterspell)?.normalizedName == "counterspell")
-    }
-
-    @Test func emptyFrameResetsVote() {
-        let vm = makeViewModel(minimumStableFrames: 2)
-        let bolt = [CardScanCandidate(confidence: 0.9, text: "Lightning Bolt")]
-
-        vm.stableBest(from: bolt)
-        vm.stableBest(from: [])
-
-        #expect(vm.stableName == nil)
-        #expect(vm.stableFrames == 0)
-
-        // The vote needs to be rebuilt from scratch after the empty frame.
-        vm.stableBest(from: bolt)
-        #expect(vm.stableBest(from: bolt)?.normalizedName == "lightning bolt")
-    }
 }
 
 // MARK: - Detection pipeline
 
 @Suite("Scan Detection Pipeline", .serialized)
 struct CardScanningPipelineTests {
-    @Test func detectsCardAfterStableFramesAndResolves() async {
-        let vm = makeViewModel(scanner: makeScanner(boltCard))
+    @Test func detectsCardAfterBackendResolve() async {
+        let vm = makeViewModel(resolver: makeResolver(boltMatch))
         vm.enterScanningForTesting()
 
-        vm.processFrame(makeImage())
-        vm.processFrame(makeImage())
-        vm.processFrame(makeImage())
+        vm.scan(imageJPEG: Data([0xFF, 0xD8, 0xFF]))
+        await vm.recognitionTask?.value
 
-        await vm.resolutionTask?.value
-
-        #expect(vm.phase == .detected(ScannedCard(card: boltCard)))
+        #expect(vm.phase == .detected(ScannedCard(match: boltMatch)))
         #expect(vm.quantity == 1)
     }
 
-    @Test func keepsScanningWhenResolutionReturnsNoCard() async {
-        let vm = makeViewModel(scanner: makeScanner(nil))
+    @Test func surfacesErrorWhenResolverFails() async {
+        struct Boom: LocalizedError {
+            var errorDescription: String? { "fallo OCR" }
+        }
+        let vm = makeViewModel(resolver: StubCardScanResolver(error: Boom()))
         vm.enterScanningForTesting()
 
-        vm.processFrame(makeImage())
-        vm.processFrame(makeImage())
-        vm.processFrame(makeImage())
+        vm.scan(imageJPEG: Data([0xFF, 0xD8, 0xFF]))
+        await vm.recognitionTask?.value
 
-        await vm.resolutionTask?.value
-
-        #expect(vm.phase == .scanning)
-    }
-
-    @Test func ignoresFramesWithinThrottleWindow() {
-        let vm = makeViewModel(minimumStableFrames: 1, scanThrottle: 1000)
-        vm.enterScanningForTesting()
-
-        vm.processFrame(makeImage())
-        #expect(vm.stableFrames == 1)
-
-        vm.processFrame(makeImage())
-        #expect(vm.stableFrames == 1)
+        guard case .error(let message) = vm.phase else {
+            Issue.record("Expected error phase")
+            return
+        }
+        #expect(message.contains("fallo OCR"))
     }
 }
 
@@ -181,13 +113,11 @@ struct CardScanningPipelineTests {
 struct CardScanningPersistenceTests {
     @Test func addsResolvedCardToCollection() async throws {
         let store = MockDataStore(seed: false)
-        let vm = makeViewModel(scanner: makeScanner(boltCard), store: store)
+        let vm = makeViewModel(resolver: makeResolver(boltMatch), store: store)
         vm.enterScanningForTesting()
 
-        vm.processFrame(makeImage())
-        vm.processFrame(makeImage())
-        vm.processFrame(makeImage())
-        await vm.resolutionTask?.value
+        vm.scan(imageJPEG: Data([0xFF, 0xD8, 0xFF]))
+        await vm.recognitionTask?.value
 
         vm.quantity = 3
         await vm.addToCollection()
@@ -203,20 +133,16 @@ struct CardScanningPersistenceTests {
 
     @Test func mergingSameCardIncrementsQuantity() async throws {
         let store = MockDataStore(seed: false)
-        let vm = makeViewModel(scanner: makeScanner(boltCard), store: store)
+        let vm = makeViewModel(resolver: makeResolver(boltMatch), store: store)
         vm.enterScanningForTesting()
 
-        vm.processFrame(makeImage())
-        vm.processFrame(makeImage())
-        vm.processFrame(makeImage())
-        await vm.resolutionTask?.value
+        vm.scan(imageJPEG: Data([0xFF, 0xD8, 0xFF]))
+        await vm.recognitionTask?.value
         vm.quantity = 1
         await vm.addToCollection()
 
-        vm.processFrame(makeImage())
-        vm.processFrame(makeImage())
-        vm.processFrame(makeImage())
-        await vm.resolutionTask?.value
+        vm.scan(imageJPEG: Data([0xFF, 0xD8, 0xFF]))
+        await vm.recognitionTask?.value
         vm.quantity = 2
         await vm.addToCollection()
 
@@ -228,20 +154,16 @@ struct CardScanningPersistenceTests {
     @Test func keepsDistinctCardsSeparate() async throws {
         let store = MockDataStore(seed: false)
 
-        let vmStock = makeViewModel(scanner: makeScanner(boltCard), store: store)
-        vmStock.enterScanningForTesting()
-        vmStock.processFrame(makeImage())
-        vmStock.processFrame(makeImage())
-        vmStock.processFrame(makeImage())
-        await vmStock.resolutionTask?.value
-        await vmStock.addToCollection()
+        let vmBolt = makeViewModel(resolver: makeResolver(boltMatch), store: store)
+        vmBolt.enterScanningForTesting()
+        vmBolt.scan(imageJPEG: Data([0xFF, 0xD8, 0xFF]))
+        await vmBolt.recognitionTask?.value
+        await vmBolt.addToCollection()
 
-        let vmCounterspell = makeViewModel(scanner: makeScanner(counterspellCard), store: store)
+        let vmCounterspell = makeViewModel(resolver: makeResolver(counterspellMatch), store: store)
         vmCounterspell.enterScanningForTesting()
-        vmCounterspell.processFrame(makeImage())
-        vmCounterspell.processFrame(makeImage())
-        vmCounterspell.processFrame(makeImage())
-        await vmCounterspell.resolutionTask?.value
+        vmCounterspell.scan(imageJPEG: Data([0xFF, 0xD8, 0xFF]))
+        await vmCounterspell.recognitionTask?.value
         await vmCounterspell.addToCollection()
 
         let saved = try await store.allCollection()
@@ -251,13 +173,11 @@ struct CardScanningPersistenceTests {
 
     @Test func retryAfterFailedSaveRestoresDetectedCard() async {
         let store = FailingMockDataStore()
-        let vm = makeViewModel(scanner: makeScanner(boltCard), store: store)
+        let vm = makeViewModel(resolver: makeResolver(boltMatch), store: store)
         vm.enterScanningForTesting()
 
-        vm.processFrame(makeImage())
-        vm.processFrame(makeImage())
-        vm.processFrame(makeImage())
-        await vm.resolutionTask?.value
+        vm.scan(imageJPEG: Data([0xFF, 0xD8, 0xFF]))
+        await vm.recognitionTask?.value
 
         await vm.addToCollection()
 
@@ -266,7 +186,7 @@ struct CardScanningPersistenceTests {
         #expect(isError)
 
         vm.retry()
-        #expect(vm.phase == .detected(ScannedCard(card: boltCard)))
+        #expect(vm.phase == .detected(ScannedCard(match: boltMatch)))
     }
 }
 

@@ -8,7 +8,7 @@ struct CardScannerView: View {
     @State private var showPermissionAlert = false
 
     init(appStore: AppStore) {
-        _viewModel = State(initialValue: CardScannerViewModel(store: appStore.store, userId: appStore.userId))
+        _viewModel = State(initialValue: CardScannerViewModel(appStore: appStore))
     }
 
     var body: some View {
@@ -20,6 +20,13 @@ struct CardScannerView: View {
                 detectedContent(scanned)
             case .adding:
                 loadingContent("Guardando en tu colección…")
+            case .recognizing:
+                ZStack {
+                    scannerContent(showShutter: false)
+                    loadingContent("Identificando carta…")
+                        .padding(24)
+                        .background(.black.opacity(0.55), in: RoundedRectangle(cornerRadius: 16))
+                }
             case .requestingPermission:
                 loadingContent("Comprobando permiso de cámara…")
             case .permissionDenied:
@@ -27,7 +34,7 @@ struct CardScannerView: View {
             case .error(let message):
                 errorContent(message)
             case .idle, .scanning:
-                scannerContent
+                scannerContent(showShutter: true)
             }
         }
         .onAppear { viewModel.start() }
@@ -46,7 +53,7 @@ struct CardScannerView: View {
 
     // MARK: - Live scanning UI
 
-    private var scannerContent: some View {
+    private func scannerContent(showShutter: Bool) -> some View {
         ZStack {
             CameraPreview(session: viewModel.previewSession)
                 .ignoresSafeArea()
@@ -54,7 +61,7 @@ struct CardScannerView: View {
             VStack {
                 Spacer()
 
-                Text("Encuadra la carta dentro del marco")
+                Text("Encuadra la carta y pulsa el disparador")
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(.white)
                     .padding(.vertical, 8)
@@ -65,6 +72,23 @@ struct CardScannerView: View {
 
                 scanGuide
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+                if showShutter {
+                    Button {
+                        viewModel.captureAndScan()
+                    } label: {
+                        ZStack {
+                            Circle()
+                                .fill(.white)
+                                .frame(width: 72, height: 72)
+                            Circle()
+                                .strokeBorder(.white.opacity(0.9), lineWidth: 4)
+                                .frame(width: 84, height: 84)
+                        }
+                    }
+                    .accessibilityLabel("Escanear carta")
+                    .padding(.bottom, 36)
+                }
             }
         }
     }
@@ -109,6 +133,11 @@ struct CardScannerView: View {
                     Text("\(setCode.uppercased()) \(scanned.collectorNumber ?? "")")
                         .font(.caption)
                         .foregroundStyle(.white.opacity(0.7))
+                }
+                if let trend = scanned.match.printing?.priceCardmarketTrend {
+                    Text(String(format: "Trend %.2f €", trend))
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.mtgAmber)
                 }
             }
 

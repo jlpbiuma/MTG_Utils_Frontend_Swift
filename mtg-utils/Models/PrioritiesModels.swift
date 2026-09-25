@@ -26,6 +26,8 @@ public struct PriorityDeckInfo: Codable, Identifiable, Hashable {
     public let missingQuantity: Int
     public let deckCardId: String
     public let potentialGain: Double
+    public let deckTotalCards: Int?
+    public let deckMissingCards: Int?
 
     public var id: String { deckCardId }
 }

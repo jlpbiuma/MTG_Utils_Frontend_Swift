@@ -1,91 +1,98 @@
-import CoreGraphics
-import Vision
+import Foundation
 
-// MARK: - Scan result models
+// MARK: - Backend card-scan models (`POST /api/cards/from-image`)
 
-/// Raw text observation produced by the OCR model for a single camera frame.
-struct CardScanCandidate: Hashable, Sendable {
-    let confidence: Float
-    let text: String
-    /// Normalized lowercased name ready for fuzzy matching against Scryfall.
-    var normalizedName: String { normalizeCardName(text) }
+struct CardScanCatalogInfo: Codable, Hashable, Sendable {
+    let id: String
+    let name: String
+    let normalizedName: String
+    let manaCost: String?
+    let typeLine: String?
+    let imageUri: String?
 }
 
-/// A card recognized from a camera frame, resolved against Scryfall.
+struct CardScanPrintingInfo: Codable, Hashable, Sendable {
+    let id: String
+    let catalogId: String?
+    let setCode: String?
+    let collectorNumber: String?
+    let imageUri: String?
+    let priceEur: Double?
+    let priceCardmarketTrend: Double?
+}
+
+struct CardScanAlternativeInfo: Codable, Hashable, Sendable {
+    let id: String
+    let name: String
+    let matchScore: Int
+    let setCode: String?
+    let collectorNumber: String?
+    let imageUri: String?
+}
+
+/// Match returned by the MTG Utils backend after OCR + catalog resolve.
+struct CardScanMatch: Codable, Hashable, Sendable {
+    let ocrTitle: String
+    let matchScore: Int
+    let catalog: CardScanCatalogInfo
+    let printing: CardScanPrintingInfo?
+    let alternatives: [CardScanAlternativeInfo]
+
+    var resolvedId: String { printing?.id ?? catalog.id }
+    var name: String { catalog.name }
+    var setCode: String? { printing?.setCode }
+    var collectorNumber: String? { printing?.collectorNumber ?? nil }
+    var manaCost: String? { catalog.manaCost }
+    var typeLine: String? { catalog.typeLine }
+    var imageUri: String? { printing?.imageUri ?? catalog.imageUri }
+    var imageUrl: URL? { AppConfiguration.imageURL(from: imageUri) }
+}
+
+/// UI-facing wrapper around a backend card-scan match.
 struct ScannedCard: Identifiable, Hashable {
-    let card: ScryfallCard
-    var id: String { card.id }
-    var name: String { card.name }
-    var setCode: String? { card.set }
-    var collectorNumber: String? { card.collectorNumber }
-    var manaCost: String? { card.displayManaCost }
-    var typeLine: String? { card.displayTypeLine }
-    var imageUri: String? { card.displayImageUri }
-    var imageUrl: URL? { card.displayImageUrl }
+    let match: CardScanMatch
+
+    var id: String { match.resolvedId }
+    var name: String { match.name }
+    var setCode: String? { match.setCode }
+    var collectorNumber: String? { match.collectorNumber }
+    var manaCost: String? { match.manaCost }
+    var typeLine: String? { match.typeLine }
+    var imageUri: String? { match.imageUri }
+    var imageUrl: URL? { match.imageUrl }
 }
 
-// MARK: - Scanning protocol
+// MARK: - Resolver protocol
 
-/// Injectable card scanner. The default implementation uses Apple Vision's
-/// on-device OCR (VNRecognizeTextRequest) + Scryfall fuzzy name resolution.
-protocol CardScanning {
-    /// Runs OCR on a camera frame and returns ranked text candidates.
-    func recognizeCard(in image: CGImage) -> [CardScanCandidate]
-    /// Resolves a scanned text candidate into a concrete Scryfall card.
-    func resolve(_ candidate: CardScanCandidate) async throws -> ScryfallCard?
+/// Uploads a card photo and resolves it through the general API (OCR home + catalog).
+protocol CardScanResolving: Sendable {
+    func resolve(imageJPEG: Data) async throws -> CardScanMatch
 }
 
-// MARK: - Vision implementation
+struct BackendCardScanResolver: CardScanResolving {
+    let client: BackendClient
+    var accessToken: String?
+    var userId: String?
 
-struct VisionCardScanService: CardScanning {
-    var minimumConfidence: Float = 0.45
-    /// Candidates with fewer characters than this are too noisy to resolve.
-    var minimumNameLength = 3
-    var resolver: ScryfallClient = .shared
+    func resolve(imageJPEG: Data) async throws -> CardScanMatch {
+        try await client.scanCardFromImage(
+            imageJPEG: imageJPEG,
+            userId: userId,
+            accessToken: accessToken
+        )
+    }
+}
 
-    func recognizeCard(in image: CGImage) -> [CardScanCandidate] {
-        let request = VNRecognizeTextRequest()
-        request.recognitionLevel = .accurate
-        request.usesLanguageCorrection = false
-        request.recognitionLanguages = ["en-US"]
+/// Returns a canned match for previews and unit tests.
+struct StubCardScanResolver: CardScanResolving {
+    var match: CardScanMatch?
+    var error: Error?
 
-        let handler = VNImageRequestHandler(cgImage: image, options: [:])
-        do {
-            try handler.perform([request])
-        } catch {
-            return []
+    func resolve(imageJPEG: Data) async throws -> CardScanMatch {
+        if let error { throw error }
+        guard let match else {
+            throw BackendClientError.invalidResponse
         }
-
-        let candidates = (request.results ?? []).compactMap { observation -> CardScanCandidate? in
-            guard let top = observation.topCandidates(1).first else { return nil }
-            let candidate = CardScanCandidate(confidence: observation.confidence, text: top.string)
-            guard candidate.confidence >= minimumConfidence else { return nil }
-            return candidate
-        }
-
-        // Rank by confidence so the most likely name appears first.
-        return candidates.sorted { $0.confidence > $1.confidence }
-    }
-
-    func resolve(_ candidate: CardScanCandidate) async throws -> ScryfallCard? {
-        let name = candidate.normalizedName
-        guard name.count >= minimumNameLength else { return nil }
-        return try await resolver.namedCard(name: name)
-    }
-}
-
-// MARK: - Stub for previews / tests
-
-/// Returns canned scan results, used by SwiftUI previews and unit tests.
-struct StubCardScanService: CardScanning {
-    var candidates: [CardScanCandidate] = []
-    var resolvedCard: ScryfallCard?
-
-    func recognizeCard(in image: CGImage) -> [CardScanCandidate] {
-        candidates
-    }
-
-    func resolve(_ candidate: CardScanCandidate) async throws -> ScryfallCard? {
-        resolvedCard
+        return match
     }
 }

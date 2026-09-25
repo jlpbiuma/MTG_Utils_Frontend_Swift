@@ -6,22 +6,23 @@ import UIKit
 
 // MARK: - Camera session controller
 
-/// Owns the `AVCaptureSession`, handles camera permission, and delivers
-/// each frame as a `CGImage` to `onFrame` on a non-main queue.
-/// Opts out of default MainActor isolation so frames arrive off the UI thread.
+/// Owns the `AVCaptureSession`, handles camera permission, and keeps the
+/// latest frame so the scanner can capture a JPEG for the backend OCR API.
 nonisolated final class CameraSessionController {
     let session = AVCaptureSession()
     /// Called on a background queue with the latest camera frame.
     var onFrame: (@Sendable (CGImage) -> Void)?
 
     private let outputQueue = DispatchQueue(label: "mtg.utils.camera.frame", qos: .userInitiated)
+    private let frameLock = NSLock()
+    private var _latestFrame: CGImage?
     private var isConfigured = false
-    private let ciContext = CIContext()
 
     enum CameraError: LocalizedError {
         case unauthorized
         case noCamera
         case setupFailed
+        case noFrame
 
         var errorDescription: String? {
             switch self {
@@ -31,8 +32,17 @@ nonisolated final class CameraSessionController {
                 return "No se encontró una cámara disponible en este dispositivo."
             case .setupFailed:
                 return "No se pudo configurar la cámara."
+            case .noFrame:
+                return "Todavía no hay una imagen de la cámara. Espera un momento e inténtalo de nuevo."
             }
         }
+    }
+
+    /// Latest processed camera frame (thread-safe).
+    var latestFrame: CGImage? {
+        frameLock.lock()
+        defer { frameLock.unlock() }
+        return _latestFrame
     }
 
     /// Requests camera permission. Returns `true` when granted.
@@ -60,6 +70,23 @@ nonisolated final class CameraSessionController {
         if session.isRunning {
             session.stopRunning()
         }
+    }
+
+    /// JPEG of the latest frame, suitable for `POST /api/cards/from-image`.
+    func captureJPEG(quality: CGFloat = 0.85) throws -> Data {
+        guard let frame = latestFrame else { throw CameraError.noFrame }
+        let uiImage = UIImage(cgImage: frame)
+        guard let data = uiImage.jpegData(compressionQuality: quality) else {
+            throw CameraError.setupFailed
+        }
+        return data
+    }
+
+    private func storeFrame(_ image: CGImage) {
+        frameLock.lock()
+        _latestFrame = image
+        frameLock.unlock()
+        onFrame?(image)
     }
 
     private func configureIfNeeded() throws {
@@ -93,7 +120,7 @@ nonisolated final class CameraSessionController {
         ]
         output.alwaysDiscardsLateVideoFrames = true
         output.setSampleBufferDelegate(SampleBufferDelegate(callback: { [weak self] image in
-            self?.onFrame?(image)
+            self?.storeFrame(image)
         }), queue: outputQueue)
 
         guard session.canAddOutput(output) else { throw CameraError.setupFailed }

@@ -1,7 +1,7 @@
 import AVFoundation
-import CoreGraphics
 import Foundation
 import Observation
+import UIKit
 
 // MARK: - Scanning lifecycle
 
@@ -9,6 +9,7 @@ enum CardScanPhase: Equatable {
     case idle
     case requestingPermission
     case scanning
+    case recognizing
     case detected(ScannedCard)
     case adding
     case permissionDenied
@@ -27,33 +28,35 @@ final class CardScannerViewModel {
     var userId: String = BackendDataStore.demoUserId
 
     private let camera: CameraSessionController
-    private var scanner: CardScanning
+    private var resolver: CardScanResolving
     private let store: AppDataStoring
 
-    // Stability / debounce state (internal so tests can verify the pipeline).
-    internal private(set) var stableName: String?
-    internal private(set) var stableFrames = 0
-    internal private(set) var resolutionTask: Task<Void, Never>?
     internal private(set) var lastScanned: ScannedCard?
-    private var lastScan: Date = .distantPast
-
-    private let minimumStableFrames: Int
-    private let scanThrottle: TimeInterval
+    internal private(set) var recognitionTask: Task<Void, Never>?
 
     init(
         camera: CameraSessionController = CameraSessionController(),
-        scanner: CardScanning = VisionCardScanService(),
+        resolver: CardScanResolving = StubCardScanResolver(),
         store: AppDataStoring = BackendDataStore(),
-        userId: String = BackendDataStore.demoUserId,
-        minimumStableFrames: Int = 3,
-        scanThrottle: TimeInterval = 0.35
+        userId: String = BackendDataStore.demoUserId
     ) {
         self.camera = camera
-        self.scanner = scanner
+        self.resolver = resolver
         self.store = store
         self.userId = userId
-        self.minimumStableFrames = minimumStableFrames
-        self.scanThrottle = scanThrottle
+    }
+
+    /// Convenience for production: backend OCR + cheapest printing.
+    convenience init(appStore: AppStore) {
+        self.init(
+            resolver: BackendCardScanResolver(
+                client: appStore.client,
+                accessToken: appStore.accessToken,
+                userId: appStore.userId
+            ),
+            store: appStore.store,
+            userId: appStore.userId
+        )
     }
 
     var isScanning: Bool {
@@ -64,21 +67,14 @@ final class CardScannerViewModel {
     }
 
     /// Session used exclusively by `CameraPreview` to render the live camera feed.
-    /// The view never needs access to the controller or to its frame callback.
     var previewSession: AVCaptureSession { camera.session }
 
     // MARK: - Lifecycle
 
-    /// Requests camera access and starts streaming frames.
+    /// Requests camera access and starts streaming frames (for the live preview).
     func start() {
-        guard !isScanning, phase != .adding else { return }
+        guard !isScanning, phase != .adding, phase != .recognizing else { return }
         phase = .requestingPermission
-
-        camera.onFrame = { [weak self] image in
-            Task { @MainActor [weak self] in
-                self?.processFrame(image)
-            }
-        }
 
         Task { @MainActor in
             do {
@@ -94,26 +90,22 @@ final class CardScannerViewModel {
 
     /// Stops streaming. Keeps a `detected` card so the user can still save it.
     func stop() {
-        camera.onFrame = nil
-        resolutionTask?.cancel()
-        resolutionTask = nil
+        recognitionTask?.cancel()
+        recognitionTask = nil
         camera.stop()
         switch phase {
-        case .scanning, .requestingPermission, .error, .permissionDenied:
+        case .scanning, .requestingPermission, .recognizing, .error, .permissionDenied:
             phase = .idle
         default:
             break
         }
     }
 
-    /// Returns from a detected card (or a transient error) to the live scanner
-    /// without exposing the view model's state machine to direct mutation.
+    /// Returns from a detected card (or a transient error) to the live scanner.
     func resumeScanning() {
         switch phase {
         case .detected, .error:
             quantity = 1
-            lastScan = .distantPast
-            resetStability()
             phase = .scanning
         default:
             break
@@ -137,64 +129,43 @@ final class CardScannerViewModel {
         return cameraError == .unauthorized
     }
 
-    // MARK: - Frame pipeline
+    // MARK: - Capture → backend OCR
 
-    /// Feeds a camera frame through OCR + stability/voting. Only a name seen
-    /// consistently across `minimumStableFrames` frames is resolved against Scryfall.
-    internal func processFrame(_ image: CGImage) {
+    /// Captures the current camera frame and resolves it via the general API.
+    func captureAndScan() {
         guard case .scanning = phase else { return }
+        do {
+            let jpeg = try camera.captureJPEG()
+            scan(imageJPEG: jpeg)
+        } catch {
+            phase = .error(error.localizedDescription)
+        }
+    }
 
-        let now = Date()
-        guard now.timeIntervalSince(lastScan) >= scanThrottle else { return }
-        lastScan = now
-
-        let candidates = scanner.recognizeCard(in: image)
-        guard let best = stableBest(from: candidates) else { return }
-
-        resolutionTask?.cancel()
-        resolutionTask = Task { [weak self] in
+    /// Test / alternate seam: resolve a JPEG without touching the camera.
+    func scan(imageJPEG: Data) {
+        guard phase == .scanning || phase == .idle else { return }
+        phase = .recognizing
+        recognitionTask?.cancel()
+        recognitionTask = Task { [weak self] in
             guard let self else { return }
             do {
-                guard let card = try await self.scanner.resolve(best) else { return }
-                guard !Task.isCancelled, case .scanning = self.phase else { return }
-                let scanned = ScannedCard(card: card)
+                let match = try await self.resolver.resolve(imageJPEG: imageJPEG)
+                guard !Task.isCancelled else { return }
+                let scanned = ScannedCard(match: match)
                 self.lastScanned = scanned
                 self.phase = .detected(scanned)
                 self.quantity = 1
             } catch {
-                // Transient resolution errors (e.g. network) keep the scanner live.
+                guard !Task.isCancelled else { return }
+                self.phase = .error(error.localizedDescription)
             }
         }
-    }
-
-    /// Applies the stability vote: the highest-confidence candidate, requiring the same
-    /// name on consecutive frames. Extracted as a pure function for unit testing.
-    internal func stableBest(from candidates: [CardScanCandidate]) -> CardScanCandidate? {
-        guard let best = candidates.first else {
-            resetStability()
-            return nil
-        }
-        let name = best.normalizedName
-        if name == stableName {
-            stableFrames += 1
-            return stableFrames >= minimumStableFrames ? best : nil
-        } else {
-            stableName = name
-            stableFrames = 1
-            return nil
-        }
-    }
-
-    private func resetStability() {
-        stableName = nil
-        stableFrames = 0
     }
 
     /// Test seam: enters the `.scanning` phase without touching the camera.
     internal func enterScanningForTesting() {
         phase = .scanning
-        lastScan = .distantPast
-        resetStability()
     }
 
     // MARK: - Persistence
@@ -220,14 +191,14 @@ final class CardScannerViewModel {
 
             let newCard = CollectionCard(
                 userId: userId,
-                cardScryfallId: scanned.card.id,
-                cardName: scanned.card.name,
+                cardScryfallId: scanned.id,
+                cardName: scanned.name,
                 quantity: quantity,
-                setCode: scanned.card.set,
-                collectorNumber: scanned.card.collectorNumber,
-                manaCost: scanned.card.displayManaCost,
-                typeLine: scanned.card.displayTypeLine,
-                imageUri: scanned.card.displayImageUri
+                setCode: scanned.setCode,
+                collectorNumber: scanned.collectorNumber,
+                manaCost: scanned.manaCost,
+                typeLine: scanned.typeLine,
+                imageUri: scanned.imageUri
             )
 
             if var merged = byKey[collectionKey(for: newCard)] {
@@ -240,8 +211,6 @@ final class CardScannerViewModel {
             try await store.saveCollection(Array(byKey.values))
 
             phase = .scanning
-            lastScan = .distantPast
-            resetStability()
         } catch {
             phase = .error(error.localizedDescription)
         }
