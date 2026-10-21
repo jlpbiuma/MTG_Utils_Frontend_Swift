@@ -176,18 +176,12 @@ final class DeckDetailViewModel {
                 )
             }
 
-            var total = 0
-            var ownedTotal = 0
-            var unique = 0
-            var missingTotal = 0
-            for card in detailCards where !card.isCommander {
-                total += card.quantity
-                ownedTotal += card.ownedInCollection
-                missingTotal += card.missingCount
-                unique += 1
-            }
-
-            let percentage = total > 0 ? (Double(ownedTotal) / Double(total)) * 100 : 0
+            let stats = deckCompletion(cards: deck.cards, ownershipResults: ownedByCardId)
+            let total = deck.cards.filter { !$0.isSideboard }.reduce(0) { $0 + $1.quantity }
+            let ownedTotal = stats.ownedCards
+            let unique = stats.uniqueCards
+            let missingTotal = stats.missingCards
+            let percentage = stats.completionPercentage
 
             // Pre-calculate price summary for display across the deck and sections
             var quotes: [String: CardPriceQuote] = [:]
@@ -195,7 +189,7 @@ final class DeckDetailViewModel {
             var ownedValue = 0.0
             var missingValue = 0.0
 
-            for card in detailCards {
+            for card in detailCards where !card.isSideboard {
                 let trend = representativePrice(card.cardName, card.typeLine)
                 let quote = CardPriceQuote(
                     cardName: card.cardName,
@@ -215,7 +209,7 @@ final class DeckDetailViewModel {
                 let effectiveOwned = min(card.ownedInCollection, card.quantity)
                 totalNet += quote.subtotal
                 ownedValue += trend * Double(effectiveOwned)
-                missingValue += trend * Double(card.missingCount)
+                missingValue += trend * Double(max(0, card.quantity - effectiveOwned))
             }
 
             self.priceSummary = PriceSummary(

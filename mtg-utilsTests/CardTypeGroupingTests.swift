@@ -122,11 +122,11 @@ struct CardTypeGroupingTests {
         #expect(sections.count == 1)
 
         let creatureSection = sections[0]
-        #expect(creatureSection.totalCards == 4)
+        #expect(creatureSection.totalCards == 1)
         #expect(creatureSection.uniqueCards == 1)
-        #expect(creatureSection.ownedCards == 2)
-        #expect(creatureSection.missingCards == 2)
-        #expect(creatureSection.completionPercentage == 50)
+        #expect(creatureSection.ownedCards == 1)
+        #expect(creatureSection.missingCards == 0)
+        #expect(creatureSection.completionPercentage == 100)
         #expect(creatureSection.sectionTotalPrice == 60)
         #expect(creatureSection.sectionMissingPrice == 30)
         #expect(creatureSection.currencySymbol == "€")
@@ -177,7 +177,7 @@ struct CardTypeGroupingTests {
         #expect(sections.count == 1)
         #expect(sections[0].key == .lands)
         #expect(sections[0].label == "Tierras")
-        #expect(sections[0].totalCards == 11)
+        #expect(sections[0].totalCards == 2)
         #expect(sections[0].uniqueCards == 2)
     }
 

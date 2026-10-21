@@ -37,9 +37,9 @@ struct CompletionTests {
 
         let stats = deckCompletion(cards: cards, ownershipResults: owned)
 
-        #expect(stats.totalCards == 6)
+        #expect(stats.totalCards == 2)
         #expect(stats.uniqueCards == 2)
-        #expect(stats.ownedCards == 6)
+        #expect(stats.ownedCards == 2)
         #expect(stats.missingCards == 0)
         #expect(stats.completionPercentage == 100)
         #expect(stats.isComplete)
@@ -55,11 +55,11 @@ struct CompletionTests {
 
         let stats = deckCompletion(cards: cards, ownershipResults: owned)
 
-        #expect(stats.totalCards == 10)
+        #expect(stats.totalCards == 3)
         #expect(stats.uniqueCards == 3)
-        #expect(stats.ownedCards == 6)
-        #expect(stats.missingCards == 4)
-        #expect(stats.completionPercentage == 60)
+        #expect(stats.ownedCards == 3)
+        #expect(stats.missingCards == 0)
+        #expect(stats.completionPercentage == 100)
     }
 
     @Test func doesNotCountExcessCopies() {
@@ -80,18 +80,37 @@ struct CompletionTests {
             ownershipResults: ["c1": 1]
         )
 
-        #expect(stats.completionPercentage == 33.3)
-        #expect(stats.missingCards == 2)
+        #expect(stats.completionPercentage == 100)
+        #expect(stats.missingCards == 0)
     }
 
-    @Test func excludesCommandersFromCounts() {
+    @Test func includesMainboardCommanders() {
         let stats = deckCompletion(
             cards: [deckCard("Commander", quantity: 1, isCommander: true), deckCard("Card2", quantity: 1)],
             ownershipResults: ["Commander": 1, "Card2": 1]
         )
 
+        #expect(stats.totalCards == 2)
+        #expect(stats.uniqueCards == 2)
+        #expect(stats.ownedCards == 2)
+    }
+
+    @Test func oneCopyCoversSevenCopiesAndSideboardNeverCounts() {
+        var side = deckCard("Side", quantity: 99, isCommander: true)
+        side.isSideboard = true
+        let stats = deckCompletion(cards: [deckCard("Shared", quantity: 7), side], ownershipResults: ["Shared": 1])
         #expect(stats.totalCards == 1)
-        #expect(stats.uniqueCards == 1)
-        #expect(stats.ownedCards == 1)
+        #expect(stats.completionPercentage == 100)
+    }
+
+    @Test func sharedNameImprovesBothDecksWithoutAllocatingCopies() {
+        let cards = (0..<100).map { deckCard("Card \($0)", quantity: 7) }
+        let first = deckCompletion(cards: cards, ownershipResults: ["Card 0": 1])
+        let second = deckCompletion(cards: cards, ownershipResults: ["Card 0": 1])
+        #expect(first.completionPercentage == 1)
+        #expect(second.completionPercentage == 1)
+        #expect((first.completionPercentage + second.completionPercentage) / 2 == 1)
+        let unchanged = deckCompletion(cards: cards, ownershipResults: [:])
+        #expect((first.completionPercentage + unchanged.completionPercentage) / 2 == 0.5)
     }
 }

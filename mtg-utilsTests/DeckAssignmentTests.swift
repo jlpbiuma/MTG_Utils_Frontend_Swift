@@ -55,7 +55,7 @@ struct DeckAssignmentTests {
         #expect(result.assignedInOtherDecks.count == 1)
         #expect(result.assignedInOtherDecks[0].deckName == "Commander Urza")
         #expect(result.assignedInOtherDecks[0].quantity == 1)
-        #expect(result.missingCount == 1)
+        #expect(result.missingCount == 0) // The owned copy covers both decks, even when assigned elsewhere.
     }
 
     @Test func allowsAssignmentWhenEnoughFreeCopiesAvailable() {

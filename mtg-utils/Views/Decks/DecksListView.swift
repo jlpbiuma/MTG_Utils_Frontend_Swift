@@ -119,7 +119,7 @@ struct DecksListView: View {
                     actionTitle: "Crear primer mazo",
                     action: { showingNewDeck = true }
                 )
-            } else if vm.filteredAndSortedDecks.isEmpty {
+            } else if vm.filteredAndSortedDecks.isEmpty && vm.assignmentNotices.isEmpty {
                 EmptyStateView(
                     title: "Sin resultados",
                     message: "No hay mazos que coincidan con los filtros o búsqueda actuales.",
@@ -130,6 +130,22 @@ struct DecksListView: View {
             } else {
                 VStack(spacing: 0) {
                     List {
+                        ForEach(vm.assignmentNotices) { notice in
+                            VStack(alignment: .leading, spacing: 8) {
+                                Label("Carta asignada automáticamente", systemImage: "exclamationmark.triangle")
+                                    .font(.headline)
+                                    .foregroundStyle(.orange)
+                                Text("Introduce \(notice.quantity) × \(notice.cardName) en el mazo \(notice.deckName). Ya figura en uso.")
+                                    .font(.callout)
+                                Button("Aceptar") { Task { await vm.acceptNotice(notice) } }
+                                    .frame(minHeight: 44)
+                                    .disabled(vm.acceptingNoticeIds.contains(notice.id))
+                                    .accessibilityLabel("Aceptar aviso de \(notice.cardName) para \(notice.deckName)")
+                            }
+                            .padding(.vertical, 8)
+                            .listRowBackground(Color.orange.opacity(0.12))
+                        }
+
                         if vm.isDeckSyncing {
                             HStack(spacing: 8) {
                                 ProgressView()
@@ -421,7 +437,7 @@ struct DeckCardItemView: View {
                             deck.isComplete ? Color.mtgGreen : Color.mtgAmber
                         )
                     Spacer()
-                    Text("\(deck.ownedCards)/\(deck.totalCards) cartas")
+                    Text("\(deck.ownedCards)/\(deck.uniqueCards) cartas")
                         .font(.caption)
                         .foregroundStyle(.mtgTextSecondary)
                 }

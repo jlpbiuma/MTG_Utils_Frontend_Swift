@@ -6,6 +6,8 @@ import Observation
 @Observable
 @MainActor
 final class DecksListViewModel {
+    private(set) var assignmentNotices: [DeckAssignmentNotice] = []
+    private(set) var acceptingNoticeIds: Set<String> = []
     private(set) var decks: [DeckSummary] = []
     private(set) var isLoading = false
     private(set) var isDeckSyncing = false
@@ -91,11 +93,25 @@ final class DecksListViewModel {
         return result
     }
 
+    func acceptNotice(_ notice: DeckAssignmentNotice) async {
+        guard !acceptingNoticeIds.contains(notice.id) else { return }
+        acceptingNoticeIds.insert(notice.id)
+        defer { acceptingNoticeIds.remove(notice.id) }
+        do {
+            try await store.acceptDeckAssignmentNotice(id: notice.id)
+            assignmentNotices.removeAll { $0.id == notice.id }
+            errorMessage = nil
+        } catch {
+            errorMessage = "No se pudo aceptar el aviso. Inténtalo de nuevo."
+        }
+    }
+
     func load() async {
         isLoading = true
         errorMessage = nil
         defer { isLoading = false }
         do {
+            assignmentNotices = try await store.pendingDeckAssignmentNotices()
             if store is BackendDataStore {
                 // The web uses the same summary endpoint; no per-deck requests.
                 decks = try await store.allDeckSummaries()
@@ -103,22 +119,13 @@ final class DecksListViewModel {
             }
             let rawDecks = try await store.allDecks()
             let collection = try await store.allCollection()
-            let ownershipIndex = buildOwnershipIndex(collection)
             let summaries: [DeckSummary] = rawDecks.compactMap { deck in
-                var ownedTotal = 0
-                var unique = 0
-                var total = 0
-                for card in deck.cards {
-                    if card.isCommander { continue }
-                    unique += 1
-                    total += card.quantity
-                    ownedTotal += min(
-                        ownershipIndex.ownedCount(scryfallId: card.cardScryfallId, name: card.cardName),
-                        card.quantity
-                    )
-                }
-                let missing = max(0, total - ownedTotal)
-                let percentage = total > 0 ? (Double(ownedTotal) / Double(total)) * 100 : 0
+                let completion = computeDeckSummary(deck: deck, collection: collection)
+                let ownedTotal = completion.ownedCards
+                let unique = completion.uniqueCards
+                let total = completion.totalCards
+                let missing = completion.missingCardsCount
+                let percentage = completion.completionPercentage
                 let colors = extractDeckColors(cards: deck.cards)
                 let estimatedPrice = estimateDeckPrice(cards: deck.cards)
 

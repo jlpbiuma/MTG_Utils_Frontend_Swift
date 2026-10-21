@@ -16,12 +16,12 @@ struct BackendLoadingTests {
         )
     }
 
-    @Test func deckListUsesOneRequestAndPreservesServerMetrics() async throws {
+    @Test func deckListLoadsNoticesAndPreservesServerMetrics() async throws {
         let vm = DecksListViewModel(store: store(), userId: "u1")
         await vm.load()
         let deck = try #require(vm.decks.first)
         #expect(vm.errorMessage == nil)
-        #expect(LoadingURLProtocol.paths == ["/api/decks"])
+        #expect(LoadingURLProtocol.paths == ["/api/decks/assignment-notices", "/api/decks"])
         #expect(deck.totalCards == 100)
         #expect(deck.ownedCards == 75)
         #expect(deck.missingCardsCount == 25)
@@ -192,6 +192,7 @@ nonisolated private final class LoadingURLProtocol: URLProtocol {
         let body: String
         let status: Int
         switch url.path {
+        case "/api/decks/assignment-notices": body = "[]"; status = 200
         case "/api/decks": body = "[\(summary)]"; status = 200
         case "/api/decks/d1/view":
             let prices = #"{"provider":"cardmarket","currency":"EUR","currencySymbol":"€","totalCards":100,"totalNetValue":8,"totalOwnedValue":6,"totalMissingValue":2,"quotes":{}}"#

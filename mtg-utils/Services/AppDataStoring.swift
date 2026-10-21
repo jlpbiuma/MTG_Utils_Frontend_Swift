@@ -4,7 +4,18 @@ import Foundation
 
 /// Persistence abstraction. Production will back this with Supabase; the demo
 /// uses an in-memory store seeded from `SeedData`.
+struct DeckAssignmentNotice: Decodable, Identifiable {
+    let id: String
+    let deckId: String
+    let cardName: String
+    let deckName: String
+    let quantity: Int
+}
+
 protocol AppDataStoring {
+    func pendingDeckAssignmentNotices() async throws -> [DeckAssignmentNotice]
+    func acceptDeckAssignmentNotice(id: String) async throws
+
     func allDecks() async throws -> [Deck]
     func allDeckSummaries() async throws -> [DeckSummary]
     func deckDetail(id: String) async throws -> DeckDetail?
@@ -27,6 +38,9 @@ protocol AppDataStoring {
 }
 
 extension AppDataStoring {
+    func pendingDeckAssignmentNotices() async throws -> [DeckAssignmentNotice] { [] }
+    func acceptDeckAssignmentNotice(id: String) async throws {}
+
     func createDeck(_ deck: Deck) async throws -> Deck {
         var all = try await allDecks()
         all.append(deck)

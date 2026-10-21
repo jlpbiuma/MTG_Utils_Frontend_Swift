@@ -15,7 +15,16 @@ func normalizeCardName(_ name: String) -> String {
     let base = name.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
     let range = NSRange(location: 0, length: (base as NSString).length)
     let collapsed = whitespaceRegex.stringByReplacingMatches(in: base, options: [], range: range, withTemplate: " ")
-    return collapsed.components(separatedBy: " // ").first ?? collapsed
+    return collapsed.replacingOccurrences(of: #"\s*/+\s*"#, with: " // ", options: .regularExpression).components(separatedBy: " // ").first ?? collapsed
+}
+
+/// Basic lands retain their existing always-covered rule.
+func isBasicLand(typeLine: String?, cardName: String?) -> Bool {
+    let type = (typeLine ?? "").lowercased()
+    if type.contains("basic land") || type.contains("tierra básica") || type.contains("tierra basica") { return true }
+    let name = normalizeCardName(cardName ?? "")
+    return ["plains", "island", "swamp", "mountain", "forest", "wastes", "llanura", "isla", "pantano", "montaña", "bosque", "yermos"].contains(name)
+        || name.hasPrefix("snow-covered ")
 }
 
 // MARK: - Card type categorization
@@ -159,6 +168,7 @@ func groupCardsByType<T: GroupableCard>(
             !categoryCards.isEmpty
         else { continue }
 
+        var coveredByName: [String: Bool] = [:]
         var totalCards = 0
         var ownedCards = 0
         var missingCards = 0
@@ -166,12 +176,14 @@ func groupCardsByType<T: GroupableCard>(
         var sectionMissingPrice = 0.0
 
         for card in categoryCards {
-            totalCards += card.quantity
-            let owned = card.ownedInCollection
-            let effectiveOwned = min(owned, card.quantity)
-            ownedCards += effectiveOwned
-            let missing = card.missingCount
-            missingCards += missing
+            let sideboard = (card as? DeckCardWithOwnership)?.isSideboard ?? false
+            let assigned = (card as? DeckCardWithOwnership)?.assignedQuantity ?? 0
+            let covered = isBasicLand(typeLine: card.typeLine, cardName: card.cardName) || card.ownedInCollection > 0 || assigned > 0
+            if !sideboard && card.quantity > 0 {
+                let name = normalizeCardName(card.cardName)
+                coveredByName[name] = (coveredByName[name] ?? false) || covered
+            }
+            let missing = isBasicLand(typeLine: card.typeLine, cardName: card.cardName) ? 0 : max(0, card.quantity - min(card.quantity, max(card.ownedInCollection, assigned)))
 
             let norm = normalizeCardName(card.cardName)
             let quote =
@@ -182,6 +194,9 @@ func groupCardsByType<T: GroupableCard>(
             sectionMissingPrice += trend * Double(missing)
         }
 
+        totalCards = coveredByName.count
+        ownedCards = coveredByName.values.filter { $0 }.count
+        missingCards = totalCards - ownedCards
         let completionPercentage =
             totalCards > 0 ? (Double(ownedCards) / Double(totalCards)) * 100 : 0
 

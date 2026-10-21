@@ -261,6 +261,14 @@ final class BackendDataStore: AppDataStoring {
         return decks
     }
 
+    func pendingDeckAssignmentNotices() async throws -> [DeckAssignmentNotice] {
+        try await getJSON([DeckAssignmentNotice].self, at: "api/decks/assignment-notices")
+    }
+
+    func acceptDeckAssignmentNotice(id: String) async throws {
+        try await sendStatus(method: "POST", path: "api/decks/assignment-notices/\(id)/accept")
+    }
+
     func allDeckSummaries() async throws -> [DeckSummary] {
         let summaries = try await self.getJSON([BackendDeckSummary].self, at: "api/decks")
         return summaries.map(Self.deckSummary(from:))
@@ -402,6 +410,7 @@ final class BackendDataStore: AppDataStoring {
             body: BackendCollectionCardRequest(from: card)
         )
         collectionCache = nil
+        decksCache = nil
     }
 
     func updateCollectionCard(id: String, quantity: Int, setCode: String?) async throws {
@@ -415,6 +424,7 @@ final class BackendDataStore: AppDataStoring {
             body: BackendCardUpdateRequest(quantity: quantity, setCode: setCode)
         )
         collectionCache = nil
+        decksCache = nil
     }
 
     func removeCollectionCard(id: String) async throws {

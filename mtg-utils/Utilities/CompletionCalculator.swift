@@ -21,7 +21,7 @@ struct DeckCardOwnershipResult: Hashable {
     var availableToAssign: Int
     var assignedInOtherDecks: [OtherDeckAssignment]
 
-    var isComplete: Bool { ownedInCollection >= missingCount }
+    var isComplete: Bool { missingCount == 0 }
 }
 
 /// Builds an ownership index from a user's collection.
@@ -78,8 +78,8 @@ func deckCardOwnershipResult(
     let alreadyAssignedHere = card.assignedQuantity
     let available = max(0, owned - assignedElsewhere - alreadyAssignedHere)
 
-    let amountOwnedForThisDeck = min(owned - assignedElsewhere, card.quantity)
-    let realMissing = max(0, card.quantity - amountOwnedForThisDeck)
+    let covered = isBasicLand(typeLine: card.typeLine, cardName: card.cardName) || owned > 0 || card.assignedQuantity > 0
+    let realMissing = covered || card.isSideboard ? 0 : 1
 
     // The numeric "missing count" used by the UI = copies needed to complete this deck.
     let missingCountReal = realMissing
@@ -110,22 +110,16 @@ func deckCompletion(
     cards: [DeckCard],
     ownershipResults: [String: Int]
 ) -> DeckCompletionStats {
-    var total = 0
-    var owned = 0
-
-    for card in cards {
-        if card.isCommander { continue }
-        total += card.quantity
-        owned += ownershipResults[card.id] ?? 0
+    var coveredByName: [String: Bool] = [:]
+    for card in cards where !card.isSideboard && card.quantity > 0 {
+        let name = normalizeCardName(card.cardName)
+        let covered = isBasicLand(typeLine: card.typeLine, cardName: card.cardName) || (ownershipResults[card.id] ?? 0) > 0 || card.assignedQuantity > 0
+        coveredByName[name] = (coveredByName[name] ?? false) || covered
     }
+    let total = coveredByName.count
+    let owned = coveredByName.values.filter { $0 }.count
+    return DeckCompletionStats(totalCards: total, uniqueCards: total, ownedCards: owned, missingCards: total - owned)
 
-    let missing = max(0, total - owned)
-    return DeckCompletionStats(
-        totalCards: total,
-        uniqueCards: cards.filter { !$0.isCommander }.count,
-        ownedCards: owned,
-        missingCards: missing
-    )
 }
 
 /// Computes completion directly from a Deck object and its resolved ownership results.
@@ -134,34 +128,15 @@ func computeDeckSummary(
     collection: [CollectionCard]
 ) -> DeckSummary {
     let index = buildOwnershipIndex(collection)
-    let otherDecks = buildOtherDeckAssignments([Deck(
-        id: deck.id,
-        userId: deck.userId,
-        name: deck.name,
-        format: deck.format,
-        cards: []
-    )])
-
-    var ownedByCardId: [String: Int] = [:]
-    var uniqueCount = 0
-    var total = 0
-    var ownedTotal = 0
-
-    for card in deck.cards {
-        if card.isCommander { continue }
-        uniqueCount += 1
-        total += card.quantity
-        let result = deckCardOwnershipResult(
-            card: card,
-            ownershipIndex: index,
-            otherDecksAssignments: otherDecks
-        )
-        ownedByCardId[card.id] = min(result.ownedInCollection, card.quantity)
-        ownedTotal += min(result.ownedInCollection, card.quantity)
-    }
-
-    let missing = max(0, total - ownedTotal)
-    let percentage = total > 0 ? (Double(ownedTotal) / Double(total) * 1000).rounded() / 10 : 0
+    let ownership = Dictionary(uniqueKeysWithValues: deck.cards.map { card in
+        (card.id, index.ownedCount(scryfallId: card.cardScryfallId, name: card.cardName))
+    })
+    let stats = deckCompletion(cards: deck.cards, ownershipResults: ownership)
+    let total = deck.cards.filter { !$0.isSideboard }.reduce(0) { $0 + $1.quantity }
+    let uniqueCount = stats.uniqueCards
+    let ownedTotal = stats.ownedCards
+    let missing = stats.missingCards
+    let percentage = stats.completionPercentage
 
     return DeckSummary(
         id: deck.id,
