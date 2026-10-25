@@ -10,7 +10,9 @@ struct DeckAssignmentNotice: Decodable, Identifiable {
     let cardName: String
     let deckName: String
     let quantity: Int
+    var imageUri: String? = nil
 }
+
 
 protocol AppDataStoring {
     func pendingDeckAssignmentNotices() async throws -> [DeckAssignmentNotice]
