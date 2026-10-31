@@ -131,15 +131,20 @@ final class AppStore {
     }
 
     func refreshSessionIfNeeded() async {
-        guard session.active, let refreshToken = self.refreshToken else { return }
-        // Best-effort refresh/validation against the backend.
-        if let user = (try? await client.authMe(accessToken: accessToken ?? "")) {
-            _ = user
+        guard session.active else { return }
+        // The backend only accepts live sessions (no X-User-Id fallback): a
+        // saved token can expire or be revoked. Offline or server errors keep
+        // the saved session; a rejected one is refreshed or signed out.
+        guard let me = try? await client.authMe(accessToken: accessToken ?? "") else { return }
+        if me.isAuthenticated { return }
+        if let refreshToken,
+           let response = try? await client.authRefresh(refreshToken: refreshToken),
+           response.error == nil,
+           apply(response: response, mode: session.mode) {
             return
         }
-        let response = (try? await client.authRefresh(refreshToken: refreshToken))
-        guard let response, response.error == nil else { return }
-        _ = apply(response: response, mode: session.mode)
+        signOut()
+        authError = "Tu sesión ha caducado. Vuelve a iniciar sesión."
     }
 
     /// Finishes the launch work before exposing the first interactive screen.
