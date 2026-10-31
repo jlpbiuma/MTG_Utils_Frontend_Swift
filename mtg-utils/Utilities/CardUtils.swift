@@ -18,13 +18,41 @@ func normalizeCardName(_ name: String) -> String {
     return collapsed.replacingOccurrences(of: #"\s*/+\s*"#, with: " // ", options: .regularExpression).components(separatedBy: " // ").first ?? collapsed
 }
 
-/// Basic lands retain their existing always-covered rule.
+/// Generic basic land names (English, Spanish, plurals and snow-covered forms),
+/// aligned with the web and backend lists.
+private let basicLandNames: Set<String> = [
+    "plains", "island", "swamp", "mountain", "forest", "wastes",
+    "snow-covered plains", "snow-covered island", "snow-covered swamp",
+    "snow-covered mountain", "snow-covered forest",
+    "islands", "swamps", "mountains", "forests",
+    "llanura", "isla", "pantano", "montaña", "montana", "bosque", "yermo", "yermos",
+    "llanuras", "islas", "pantanos", "montañas", "montanas", "bosques",
+    "llanura nevada", "llanuras nevadas", "llanura cubierta de nieve",
+    "isla nevada", "islas nevadas", "isla cubierta de nieve",
+    "pantano nevado", "pantanos nevados", "pantano cubierto de nieve",
+    "montaña nevada", "montañas nevadas", "montana nevada", "montanas nevadas",
+    "montaña cubierta de nieve", "montana cubierta de nieve",
+    "bosque nevado", "bosques nevados", "bosque cubierto de nieve",
+    "yermo nevado", "yermos nevados", "yermo cubierto de nieve",
+]
+
+/// Basic lands are always covered in completion. Names must match exactly, so
+/// Tropical Island or Mountain Goat are never treated as basics.
 func isBasicLand(typeLine: String?, cardName: String?) -> Bool {
     let type = (typeLine ?? "").lowercased()
-    if type.contains("basic land") || type.contains("tierra básica") || type.contains("tierra basica") { return true }
-    let name = normalizeCardName(cardName ?? "")
-    return ["plains", "island", "swamp", "mountain", "forest", "wastes", "llanura", "isla", "pantano", "montaña", "bosque", "yermos"].contains(name)
-        || name.hasPrefix("snow-covered ")
+    if type.contains("basic land") || type.contains("tierra básica") || type.contains("tierra basica")
+        || (type.contains("basic") && type.contains("land"))
+        || (type.contains("básica") && type.contains("tierra"))
+        || (type.contains("basica") && type.contains("tierra")) {
+        return true
+    }
+    return basicLandNames.contains(normalizeCardName(cardName ?? ""))
+}
+
+/// Front half of a multi-face value such as `Battle — Siege // Creature`.
+func frontFace(_ text: String?) -> String {
+    guard let text, !text.isEmpty else { return "" }
+    return (text.components(separatedBy: "//").first ?? text).trimmingCharacters(in: .whitespaces)
 }
 
 // MARK: - Card type categorization
@@ -64,14 +92,17 @@ let cardTypeGroups: [CardTypeCategory: CardTypeGroupInfo] = [
 /// Creature types take precedence over artifacts/enchantments (e.g. Artifact Creatures → Criaturas).
 func getCardCategory(typeLine: String?, cardName: String?) -> CardTypeCategory {
     if let typeLine {
-        let lower = typeLine.lowercased()
+        // Multi-face cards are grouped by their front face (a battle that
+        // transforms into a creature stays a battle). Same precedence as web
+        // and backend: creatures first.
+        let lower = frontFace(typeLine).lowercased()
 
-        if lower.contains("planeswalker") { return .planeswalkers }
         if lower.contains("creature") || lower.contains("criatura") { return .creatures }
+        if lower.contains("planeswalker") { return .planeswalkers }
         if lower.contains("instant") || lower.contains("instantáneo") { return .instants }
         if lower.contains("sorcery") || lower.contains("conjuro") { return .sorceries }
-        if lower.contains("enchantment") || lower.contains("encantamiento") { return .enchantments }
         if lower.contains("artifact") || lower.contains("artefacto") { return .artifacts }
+        if lower.contains("enchantment") || lower.contains("encantamiento") { return .enchantments }
         if lower.contains("battle") || lower.contains("batalla") { return .battles }
         if lower.contains("land") || lower.contains("tierra") { return .lands }
     }
@@ -79,9 +110,7 @@ func getCardCategory(typeLine: String?, cardName: String?) -> CardTypeCategory {
     if let cardName {
         let lowerName = cardName.lowercased().trimmingCharacters(in: .whitespaces)
 
-        // Basic lands
-        let basicLands = ["plains", "island", "swamp", "mountain", "forest", "wastes"]
-        if basicLands.contains(lowerName) || lowerName.hasPrefix("snow-covered ") {
+        if isBasicLand(typeLine: typeLine, cardName: cardName) {
             return .lands
         }
 

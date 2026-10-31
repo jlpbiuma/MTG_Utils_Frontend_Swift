@@ -40,3 +40,22 @@ func manaPillGlyph(_ symbol: String) -> String {
         return symbol
     }
 }
+
+/// Symbols of each face of a cost such as `{1}{R} // {1}{U}`; empty faces are dropped.
+func parseManaCostFaces(_ cost: String?) -> [[String]] {
+    guard let cost, !cost.isEmpty else { return [] }
+    return cost.components(separatedBy: "//").map(parseManaCostSymbols).filter { !$0.isEmpty }
+}
+
+/// Colors and Phyrexian flag of a hybrid/Phyrexian symbol (`W/U`, `2/W`, `B/P`, `G/U/P`).
+func compositeManaParts(_ symbol: String) -> (parts: [String], phyrexian: Bool)? {
+    let pieces = symbol.uppercased().split(separator: "/").map(String.init)
+    guard pieces.count > 1 else { return nil }
+    let phyrexian = pieces.contains("P")
+    let parts = pieces.filter { $0 != "P" }
+    let colors: Set<String> = ["W", "U", "B", "R", "G", "C"]
+    guard parts.contains(where: colors.contains),
+          parts.allSatisfy({ colors.contains($0) || Int($0) != nil }),
+          parts.count <= 2, phyrexian || parts.count == 2 else { return nil }
+    return (parts, phyrexian)
+}

@@ -99,12 +99,20 @@ struct ManaCostView: View {
         self.font = font
     }
 
-    private var symbols: [String] { parseManaCostSymbols(cost) }
+    private var faces: [[String]] { parseManaCostFaces(cost) }
 
     var body: some View {
         HStack(spacing: 2) {
-            ForEach(Array(symbols.enumerated()), id: \.offset) { _, symbol in
-                ManaPill(symbol: symbol, style: .small)
+            ForEach(Array(faces.enumerated()), id: \.offset) { faceIndex, symbols in
+                if faceIndex > 0 {
+                    Text("//")
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(.mtgTextSecondary)
+                        .accessibilityLabel("otra cara")
+                }
+                ForEach(Array(symbols.enumerated()), id: \.offset) { _, symbol in
+                    ManaPill(symbol: symbol, style: .small)
+                }
             }
         }
     }
@@ -179,7 +187,17 @@ struct ManaPill: View {
                 .font(.system(size: iconSize * 0.85, weight: .bold))
                 .foregroundStyle(Color(red: 0.20, green: 0.20, blue: 0.22))
         default:
-            if sym.contains("/") {
+            if let composite = compositeManaParts(sym), composite.phyrexian {
+                // Phyrexian mana: a vertical stroke through an oval.
+                ZStack {
+                    Ellipse()
+                        .stroke(phyrexianGlyphColor(composite.parts), lineWidth: diameter * 0.09)
+                        .frame(width: diameter * 0.42, height: diameter * 0.52)
+                    Capsule()
+                        .fill(phyrexianGlyphColor(composite.parts))
+                        .frame(width: diameter * 0.09, height: diameter * 0.74)
+                }
+            } else if sym.contains("/") {
                 let parts = sym.split(separator: "/").map(String.init)
                 HStack(spacing: 0.5) {
                     ForEach(Array(parts.enumerated()), id: \.offset) { _, part in
@@ -212,10 +230,16 @@ struct ManaPill: View {
         }
     }
 
+    private func phyrexianGlyphColor(_ parts: [String]) -> Color {
+        parts == ["W"] ? Color(red: 0.28, green: 0.24, blue: 0.16) : .white
+    }
+
     @ViewBuilder
     private func circleBackground(for sym: String) -> some View {
-        if sym.contains("/") {
-            let parts = sym.split(separator: "/").map(String.init)
+        if let composite = compositeManaParts(sym), composite.phyrexian, composite.parts.count == 1 {
+            manaColor(composite.parts[0])
+        } else if sym.contains("/") {
+            let parts = (compositeManaParts(sym)?.parts) ?? sym.split(separator: "/").map(String.init)
             let c1 = manaColor(parts.first ?? "")
             let c2 = manaColor(parts.last ?? "")
             LinearGradient(colors: [c1, c2], startPoint: .topLeading, endPoint: .bottomTrailing)
@@ -259,6 +283,9 @@ struct ManaPill: View {
         case "E": return "energía"
         case "T": return "girar"
         default:
+            if let composite = compositeManaParts(sym), composite.phyrexian {
+                return "maná pirexiano \(composite.parts.joined(separator: "/"))"
+            }
             if sym.contains("/") { return "maná híbrido \(sym)" }
             return "maná \(sym)"
         }

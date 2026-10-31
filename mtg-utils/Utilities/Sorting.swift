@@ -38,48 +38,35 @@ enum SortDirection: String, CaseIterable, Hashable, Identifiable {
     }
 }
 
-/// Extracts the converted mana cost (CMC) from an MTG mana-cost string like `{2}{U}{U}`.
-/// Mirrors the web app's `extractCmc`: `{X}`/`{Y}`/`{Z}` contribute 0, hybrid
-/// (`{W/U}`) and phyrexian (`{W/P}`) symbols cost 1, numbers contribute their value.
-func extractCmc(from manaCost: String?) -> Double {
+/// Mana value from an MTG mana-cost string like `{2}{U}{U}`. Mirrors the web
+/// app's `extractCmc`: `{X}`/`{Y}`/`{Z}` are 0, hybrid symbols cost their most
+/// expensive half (`{2/W}` is 2, `{W/U}` and Phyrexian `{W/P}` are 1) and half
+/// mana (`{HW}`, `{1/2}`) is 0.5. A split cost (`{1}{R} // {1}{U}`) adds both
+/// halves; Adventure and Omen cards only count their main half.
+func extractCmc(from manaCost: String?, typeLine: String? = nil) -> Double {
     guard let manaCost, !manaCost.isEmpty else { return 0 }
 
-    var total: Double = 0
-    var scanner = Substring(manaCost)
-
-    while let start = scanner.firstIndex(of: "{") {
-        scanner = scanner[scanner.index(after: start)...]
-        guard let end = scanner.firstIndex(of: "}") else { break }
-        let token = String(scanner[..<end])
-        scanner = scanner[scanner.index(after: end)...]
-
-        switch token {
-        case "X", "Y", "Z":
-            continue
-        default:
-            if token.contains("/") {
-                // Hybrid or phyrexian symbol costs 1.
-                total += 1
-            } else if let number = Double(token) {
-                total += number
-            } else if let value = coloredManaValue(token) {
-                total += value
-            } else {
-                // Unknown/other symbol paid in generic terms costs 1.
-                total += 1
-            }
-        }
+    var halves = manaCost.components(separatedBy: "//")
+    if halves.count > 1, let type = typeLine?.lowercased(),
+       ["adventure", "aventura", "omen", "presagio"].contains(where: type.contains) {
+        halves = Array(halves.prefix(1))
     }
-
-    return total
+    return halves.flatMap(parseManaCostSymbols).reduce(0) { $0 + symbolManaValue($1) }
 }
 
-private func coloredManaValue(_ symbol: String) -> Double? {
-    let colorMultipliers = ["W": 1.0, "U": 1.0, "B": 1.0, "R": 1.0, "G": 1.0]
-    if let value = colorMultipliers[symbol] { return value }
-    // Other single-letter symbols not listed (e.g. "C") cost 1.
-    if symbol.count == 1, symbol.rangeOfCharacter(from: .uppercaseLetters) != nil { return 1 }
-    return nil
+private func symbolManaValue(_ symbol: String) -> Double {
+    let token = symbol.trimmingCharacters(in: .whitespaces).uppercased()
+    switch token {
+    case "X", "Y", "Z": return 0
+    case "½", "1/2": return 0.5
+    default:
+        if let number = Double(token), token.allSatisfy(\.isNumber) { return number }
+        if token.hasPrefix("H"), token.count > 1 { return 0.5 }
+        if token.contains("/") {
+            return token.split(separator: "/").map { Double($0) ?? 1 }.max() ?? 1
+        }
+        return 1
+    }
 }
 
 /// Protocol for any model that can be sorted.
@@ -94,7 +81,7 @@ protocol SortableCard {
 }
 
 extension SortableCard {
-    var cmcValue: Double { cmc ?? extractCmc(from: manaCost) }
+    var cmcValue: Double { cmc ?? extractCmc(from: manaCost, typeLine: typeLine) }
     var colors: [String] { [] }
     var category: CardTypeCategory { getCardCategory(typeLine: typeLine, cardName: name) }
 }
